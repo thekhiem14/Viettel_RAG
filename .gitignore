@@ -1,3 +1,60 @@
+# Data — raw input (không commit)
 public_test_data
 training_data_update
 data/Document_config_data
+
+# Built artifacts — lớn, regenerate được
+artifacts/
+synthetic/
+outputs/
+
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Temp files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.env.local
+*.pem
+.env.example
