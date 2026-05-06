@@ -52,7 +52,10 @@ def main(force: bool = False) -> None:
 
     ids = [e.func_code for e in entries]
     bm25_texts = [f"{e.name} {e.description} {e.example_question}" for e in entries]
-    fuzzy_targets = [{"id": e.func_code, "text": f"{e.name} {e.description}"} for e in entries]
+    fuzzy_targets = [
+        {"id": e.func_code, "func_code": e.func_code, "name": e.name, "text": f"{e.name} {e.description}"}
+        for e in entries
+    ]
 
     with timed("embed API entries (bge-m3)"):
         embedder = Embedder()
