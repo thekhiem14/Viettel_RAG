@@ -41,9 +41,8 @@ class FuzzyStore:
         scored: list[tuple[str, float]] = []
         for t in self._targets:
             s_name = fuzz.WRatio(query, t["name"]) if "name" in t else 0.0
-            s_code = fuzz.WRatio(query, t["func_code"]) if "func_code" in t else 0.0
             s_text = fuzz.WRatio(query, t["text"])
-            score = 0.5 * s_name + 0.3 * s_code + 0.2 * s_text
+            score = 0.6 * s_name + 0.4 * s_text
             scored.append((t["id"], score))
 
         scored.sort(key=lambda x: x[1], reverse=True)

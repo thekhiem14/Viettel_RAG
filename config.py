@@ -9,11 +9,14 @@ ROOT = Path(__file__).parent  # Viettel_RAG/
 
 # --- Raw data (KHÔNG SỬA) ---
 DATA_DIR       = Path(os.getenv("DATA_DIR",       str(ROOT / "data")))
+DOC_MD_DIR     = Path(os.getenv("DOC_MD_DIR",     str(ROOT / "data" / "document")))
 MINERU_OUT_DIR = Path(os.getenv("MINERU_OUT_DIR", str(ROOT / "training_data_update" / "output")))
 
-API_CONFIG_MD = DATA_DIR / "Config_API_RAG.md"
-EXAMPLE_MD    = DATA_DIR / "Example_Data_RAG.md"
-TEST_MD       = DATA_DIR / "Test_Data_RAG.md"
+API_CSV       = DATA_DIR / "Tài_liệu_config_API_Doc_api_for_contest.csv"
+API_ALIAS_CSV = DATA_DIR / "Tài_liệu_config_API_Doc_alias_for_contest.csv"
+EXAMPLE_CSV   = DATA_DIR / "example_data_example_question.csv"
+EXAMPLE_RESULT_CSV = DATA_DIR / "example_data_example_result.csv"
+TEST_MD       = DATA_DIR / "example_data_example_question.csv"
 
 # --- Artifacts (BUILT) ---
 ARTIFACTS_DIR = Path(os.getenv("ARTIFACTS_DIR", str(ROOT / "artifacts")))
@@ -21,6 +24,7 @@ SYNTHETIC_DIR = Path(os.getenv("SYNTHETIC_DIR", str(ROOT / "synthetic")))
 OUTPUTS_DIR   = Path(os.getenv("OUTPUTS_DIR",   str(ROOT / "outputs")))
 LOGS_DIR      = Path(os.getenv("LOGS_DIR",      str(ROOT / "logs")))
 
+API_ALIASES = ARTIFACTS_DIR / "api" / "aliases.json"
 DOC_CHUNKS  = ARTIFACTS_DIR / "docs" / "chunks.jsonl"
 DOC_FAISS   = ARTIFACTS_DIR / "docs" / "faiss.index"
 DOC_BM25    = ARTIFACTS_DIR / "docs" / "bm25.pkl"
@@ -46,7 +50,7 @@ BM25_TOP_K         = 20
 FAISS_TOP_K        = 20
 RRF_K              = 60
 RERANK_TOP_K       = 5
-API_RETRIEVE_TOP_K = 5
+API_RETRIEVE_TOP_K = 5   # TODO: test top_k=10 — nếu latency cho phép thì tăng
 
 # --- LLM ---
 LLM_MAX_NEW_TOKENS = 512

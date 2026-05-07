@@ -1,4 +1,4 @@
-"""Run inference trên 617 test questions → output JSON cho submission.
+"""Run inference trên 617 test questions -> output JSON cho submission.
 
 Usage:
     python rag/scripts/07_run_inference.py
@@ -46,7 +46,7 @@ def main() -> None:
 
     print(f"[07_inference] DONE — {len(results)} results in {total_time:.1f}s")
     print(f"  avg: {total_time / len(results):.2f}s/question")
-    print(f"  saved → {out_path}")
+    print(f"  saved -> {out_path}")
 
 
 if __name__ == "__main__":

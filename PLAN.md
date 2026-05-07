@@ -33,26 +33,30 @@ Parse `note` → dict `{"A": "Answer A", "B": "Answer B", ...}` trước khi bui
 ## Dữ liệu
 
 ```
-data/                         # (đổi từ LLM/data/)
-├── Document_config_data/     # PDF kho tri thức call_document
-├── Config_API_RAG.md         # markdown — 131 func_code unique với schema chi tiết
-├── Tài liệu config API.xlsx  # Excel source of truth — 2 sheet: Doc_api_for_contest + Doc_alias_for_contest
-├── Example_Data_RAG.md       # 100 câu (50 call_doc + 50 call_api) — KHÔNG có function_result
-├── example_data.xlsx         # Excel — 3 cột: id, fun_question, note
-├── Test_Data_RAG.md          # 617 câu test (chỉ có id + fun_question + note)
-└── Test_data.xlsx            # Excel backup
+data/
+├── chroma_db/
+│   ├── chroma.sqlite3                              # ChromaDB vector store (collection mineru_rag_free)
+│   ├── chroma_documents.md                         # 380 docs export từ ChromaDB — source chính cho chunking
+│   └── 128b50b3-.../                               # HNSW index binary files
+├── Tài_liệu_config_API_Doc_api_for_contest.csv     # 131 API entries (từ xlsx sheet Doc_api_for_contest)
+├── Tài_liệu_config_API_Doc_alias_for_contest.csv   # alias/enum lookup (từ xlsx sheet Doc_alias_for_contest)
+├── example_data_example_question.csv               # 100 câu eval (id, fun_question, note)
+├── example_data_example_result.csv                 # ground truth eval (id, func_code, func_param)
+├── Test_data.csv                                   # 617 câu test (id, fun_question, note)
+└── Tài liệu config API.xlsx                        # Excel gốc (giữ lại, không dùng trực tiếp)
 ```
 
 **Phát hiện từ đọc data thực tế**:
-- `example_data.xlsx` có **3 cột: id, fun_question, note** — KHÔNG có cột `function_result` hay đáp án đúng
+- `example_data_example_question.csv` có **3 cột: id, fun_question, note** — KHÔNG có đáp án đúng
 - Phân biệt call_doc / call_api **bằng cột `note`**: note = null → call_api; note có A/B/C/D → call_document
 - ID range: call_api = 1000–1147, call_document = 701–750
-- **131 API** (không phải 136) theo Excel thực tế — Sheet `Doc_api_for_contest`
-- Sheet `Doc_alias_for_contest`: 22 alias/enum lookup tables (priorityList, assetGroup, dtmsClass, ...) — dùng để validate params
-- `Endpoint config` trong Excel là **JSON blob** chứa: `request`, `example_call`, `required_params`, `optional_params`, `response_schema`
+- **131 API** (không phải 136) — `Tài_liệu_config_API_Doc_api_for_contest.csv`
+- File alias CSV: mỗi row là chuỗi `aliasName = [{"key":..., "value":...}, ...]` — parse bằng `ast.literal_eval`
+- `Endpoint config` trong CSV là **JSON blob** chứa: `request`, `example_call`, `required_params`, `optional_params`, `response_schema`
 - `structured_output` luôn là `{}` (bỏ qua); `allow_empty_result` luôn là `false` (bỏ qua)
 - Câu hỏi call_api là **tiếng Việt thuần** ("Trong năm 2025, TTPMVT có bao nhiêu nhân sự...") — hỏi về PMO dashboards: projects, RA, leakage/defect rate, headcount, revenue
 - Câu hỏi call_document là **tiếng Việt MCQ** có reference Public_XXX trong nội dung câu hỏi
+- **chroma_documents.md**: 380 docs, format `# Public_XXX` làm separator, H2–H5 cho heading sections, 100/380 doc có intro paragraph trước H2 đầu tiên
 
 **Ý nghĩa với FuzzyStore**:
 - Fuzzy matching trên `func_code` (tiếng Anh kỹ thuật) KHÔNG phù hợp vì query là tiếng Việt
@@ -87,17 +91,14 @@ RAG pipe  API-RAG pipe
 
 ## Pipeline 1: call_document (RAG trên PDF)
 
-### Bước 0 — Convert PDF → Markdown (398 files)
-- Tool chính: **Marker** (giữ heading structure, bảng, công thức tốt nhất)
-- Tool fallback: **PyMuPDF4LLM** (nhanh hơn, dùng khi Marker fail)
-- Input: `LLM/data/Document_config_data/*.pdf` (398 files)
-- Output: `LLM/data/Document_config_data/output/Public_XXX/main.md`
-- **Checkpoint strategy**: convert từng batch 50 file, lưu ngay sau mỗi batch
-- **Idempotent**: skip nếu `.md` đã tồn tại → rerun an toàn
-- **Error handling**: Nếu Marker fail trên file cụ thể → retry với PyMuPDF4LLM; nếu cả 2 fail → log và skip
-- Ước tính thời gian: 2-4h trên Colab T4 (~20-40s/file)
+### Bước 0 — ~~Convert PDF → Markdown~~ (ĐÃ HOÀN THÀNH)
+- **Không cần chạy lại** — 380 docs đã được parse và export vào `data/chroma_db/chroma_documents.md`
+- Source gốc là ChromaDB collection `mineru_rag_free` (2,036 chunks, dim 768)
+- File `chroma_documents.md` đã clean: bỏ heading duplicate, paragraph duplicate, junk tokens
 
 ### Bước 1 — Chunking (heading-based + breadcrumb)
+
+Input: `data/chroma_db/chroma_documents.md` — 380 docs, phân tách bằng `# Public_XXX`
 
 Mỗi chunk = 1 heading section, prefix breadcrumb đường dẫn ancestor:
 
@@ -107,12 +108,15 @@ Mỗi chunk = 1 heading section, prefix breadcrumb đường dẫn ancestor:
 Năm 2010, nhà thông minh được trang bị một bộ cảm biến...
 ```
 
-Quy tắc kích thước:
-- < 80 ký tự → gộp vào parent
-- 80–600 ký tự → 1 chunk
-- > 600 ký tự → split thêm (RecursiveCharacterTextSplitter, overlap ~80 ký tự), mỗi sub-chunk vẫn giữ breadcrumb prefix
+**Xử lý đặc biệt**:
+- `# Public_XXX` (H1) = doc separator, KHÔNG tạo chunk từ H1
+- Intro paragraph (text trước H2 đầu tiên, ~100/380 docs) → tạo chunk với `heading_path = doc_id`, `level = 0`
+- H2–H5 → breadcrumb bình thường
 
-Target: **300–500 ký tự/chunk**
+Quy tắc kích thước:
+- < 80 ký tự → skip
+- 80–600 ký tự → 1 chunk
+- > 600 ký tự → split (overlap ~80 ký tự), mỗi sub-chunk giữ breadcrumb prefix
 
 Metadata mỗi chunk:
 ```python
@@ -124,6 +128,8 @@ Metadata mỗi chunk:
   "char_count": 342
 }
 ```
+
+**Implementation**: `rag/src/chunking/heading_chunker.py` — `chunk_all_documents()` auto-detect file tổng hợp, fallback sang từng `Public_XXX.md` nếu không có.
 
 ### Bước 2 — Indexing
 
@@ -224,7 +230,8 @@ Tầng 3: Validate JSON (3-tier fallback)
 ```
 
 ### Bước 1 — Index API (offline, 1 lần)
-- Source: `data/Tài liệu config API.xlsx` — Sheet `Doc_api_for_contest` (131 entries)
+- Source: `data/Tài_liệu_config_API_Doc_api_for_contest.csv` (131 entries)
+- Alias: `data/Tài_liệu_config_API_Doc_alias_for_contest.csv` → `api_aliases.json`
 - Parse ra 131 entries, mỗi entry có: `func_code`, `name`, `description`, `Example question`, `Endpoint config` (JSON)
 - Mỗi API = 1 document embed (concat `name + description + Example question`)
 - Build **3 indices song song**:
@@ -232,7 +239,8 @@ Tầng 3: Validate JSON (3-tier fallback)
   - **BM25**: pyvi segment trên `name + description + Example question` → `api_bm25.pkl`
   - **Fuzzy target list**: `[{id: func_code, text: name + " " + description}]` — **tiếng Việt**, không phải func_code
 - Lưu song song: dict `func_code → full_schema` JSON để lookup O(1)
-- Lưu thêm: Sheet `Doc_alias_for_contest` → `api_aliases.json` để validate enum params
+
+**Implementation**: `rag/src/indexing/api_parser.py` — `parse_api_csv()` và `parse_alias_csv()`
 
 ### Bước 2 — Retrieve top-5 candidates
 Chạy 3 nguồn **song song**:
@@ -303,49 +311,6 @@ Sau parse thành công, validate:
 
 ---
 
-## Data Augmentation (Gen synthetic data)
-
-### Vì sao cần
-100 labeled examples (50+50) quá ít để:
-- Train classifier robust
-- Eval pipeline accuracy trước khi chạy 617 test
-- Phát hiện failure modes sớm
-
-### Chiến lược gen
-
-**1. Gen MCQ cho call_document** (~500 câu)
-- Với mỗi chunk "thú vị" (>300 chars, có số liệu/khái niệm/định nghĩa):
-  Gemini Flash gen 1 câu MCQ + 4 đáp án A/B/C/D + đáp án đúng
-- Output: `LLM/data/synthetic/doc_qa.jsonl`
-- Mục đích: Eval set cho RAG pipeline
-
-**2. Gen call_api questions** (~300 câu)
-- Với mỗi trong 136 func_code + example_call có sẵn:
-  Gemini Flash gen 2-3 variations câu hỏi tự nhiên (diễn đạt khác nhau)
-  Ground truth = `example_call` JSON có sẵn trong Config_API_RAG.md
-- Output: `LLM/data/synthetic/api_qa.jsonl`
-- Mục đích: Eval set cho API pipeline + augment classifier training
-
-**3. Chia train/eval**
-- **Classifier training**: 100 real + 500 synthetic = 600 samples
-- **Pipeline eval**: 100 real (held-out, KHÔNG đưa vào train)
-
-### Rate limit handling
-- Gemini Flash free: 15 RPM, 1500/day
-- Batch request, sleep 4s giữa calls → ~3 giờ để gen 800 samples
-- Retry 3 lần với exponential backoff nếu fail
-
----
-
-## Intent Classifier
-
-- **Training data**: 600 samples (100 real + 500 synthetic từ bước trên)
-- **Model**: TF-IDF + Logistic Regression (không rule-based, không fallback)
-- **Feature engineering**: Thêm signal "có chứa A/B/C/D hoặc 4 options" → boost call_document
-- **Persist**: lưu `.pkl` cùng index files lên Google Drive
-
----
-
 ## Model Stack
 
 | Role | Model | VRAM base | VRAM runtime |
@@ -370,14 +335,15 @@ Sau parse thành công, validate:
 
 ```
 Giai đoạn 1 — OFFLINE (chạy trước, lưu Google Drive):
-  PDF → Marker → markdown → chunk (pyvi segment) → embed → FAISS doc index
-                                                          → BM25 doc pickle
-                                                          → chunks metadata JSON
-  Config_API_RAG.md → parse 136 entries → embed (name+desc+example) → FAISS API index
-                                        → BM25 API pickle (pyvi segment)
-                                        → func_code → full_schema dict JSON
-                                        → fuzzy target list (func_code + name)
-  example_data + Gemini labels → TF-IDF+LR → classifier.pkl
+  chroma_documents.md → chunk (heading+breadcrumb) → embed (bge-m3) → FAISS doc index
+                                                                      → BM25 doc pickle
+                                                                      → chunks metadata JSON
+  Tài_liệu_config_API_Doc_api_for_contest.csv → parse 131 entries → embed → FAISS API index
+                                                                           → BM25 API pickle
+                                                                           → schemas.json
+                                                                           → fuzzy target list
+  Tài_liệu_config_API_Doc_alias_for_contest.csv → api_aliases.json
+  example_data_example_question.csv + Gemini labels → TF-IDF+LR → classifier.pkl
 
 Giai đoạn 2 — INFERENCE (khi thi trên Colab):
   Load từ Drive → classifier → RAG / API-lookup → LLM → output JSON
@@ -441,16 +407,16 @@ Focus fix bucket LỚN NHẤT trước, không dàn trải.
 
 ## Thứ tự implementation
 
-1. **PDF conversion**: Marker (checkpoint mỗi 50 file) → fallback PyMuPDF4LLM
-2. **Chunking**: heading + breadcrumb + pyvi segment, persist chunks JSON
-3. **Index documents**: FAISS (bge-m3) + BM25 (pyvi tokenized) → Drive
-4. **Parse + Index API**: `Config_API_RAG.md` → 136 schemas dict + FAISS + BM25 + fuzzy list
-5. **[MỚI] Data augmentation**: Gen 500 MCQ + 300 API Q&A bằng Gemini Flash
-6. **Intent Classifier**: train TF-IDF+LR trên 600 samples, có feature "A/B/C/D pattern"
+1. ~~**PDF conversion**~~ — **DONE**: `chroma_documents.md` đã có 380 docs sạch
+2. **Chunking**: `heading_chunker.py` đọc `chroma_documents.md` → `chunks.jsonl` ✅ (code xong, chưa chạy)
+3. **Index documents**: FAISS (bge-m3) + BM25 (pyvi tokenized) → Drive (`02_build_doc_index.py`)
+4. **Parse + Index API**: CSV → 131 schemas + FAISS + BM25 + fuzzy list (`03_build_api_index.py`) ✅ (code xong, chưa chạy)
+5. **Data augmentation**: Gen 500 MCQ + 300 API Q&A bằng Gemini Flash
+6. **Intent Classifier**: train TF-IDF+LR trên samples, feature "A/B/C/D pattern"
 7. **RAG pipeline (call_document)**: hybrid retrieval + reranker + CoT prompt + Qwen3-4B
 8. **API pipeline (call_api)**: Fuzzy+BM25+FAISS → RRF top-5 → LLM chọn+fill → 3-tier JSON validation
-9. **[MỚI] Eval trên 100 example**: log đầy đủ → error analysis → iterate fix
-10. **Run inference 617 test**: batch embedding, query cache → output JSON
+9. **Eval trên 100 example**: `06_eval.py` — log đầy đủ → error analysis → iterate fix
+10. **Run inference 617 test**: `07_run_inference.py` — batch embedding, query cache → output JSON
 
 ---
 
@@ -467,5 +433,9 @@ Focus fix bucket LỚN NHẤT trước, không dàn trải.
 - Chunking API → bỏ (description ngắn, chunking kém hiệu quả hơn full match)
 - Qwen3-4B thinking ON cho call_api (tốn 8-15s không cần) → OFF, structured extraction là đủ
 - **Fuzzy trên `func_code`** → bỏ. Query là tiếng Việt, không ai gõ "get_defect_rate_monthly". Thay bằng fuzzy trên `name + description` (tiếng Việt).
-- **`Config_API_RAG.md` làm source** → dùng `Tài liệu config API.xlsx` thay thế (structured hơn, dễ parse, có Sheet alias)
-- 136 API → thực tế **131 API** theo Excel
+- **`Config_API_RAG.md` làm source** → dùng CSV export từ Excel thay thế: `Tài_liệu_config_API_Doc_api_for_contest.csv` + `Tài_liệu_config_API_Doc_alias_for_contest.csv`
+- **Excel (`Tài liệu config API.xlsx`)** → không dùng trực tiếp, đã export ra CSV
+- 136 API → thực tế **131 API** theo CSV
+- **`Example_Data_RAG.md` / `Test_Data_RAG.md`** → thay bằng CSV: `example_data_example_question.csv`, `Test_data.csv`
+- **PDF → Markdown step** → không cần, đã có `chroma_documents.md` với 380 docs đã clean
+- **openpyxl dependency** → đã bỏ khỏi `api_parser.py`, chỉ dùng `pandas` + `csv` stdlib

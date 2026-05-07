@@ -23,7 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
-from intent.src.md_parser import parse_example_md
+from intent.src.md_parser import parse_example_csv
 from rag.src.pipeline.orchestrator import run_batch
 from shared.utils.io import save_json, save_jsonl
 from shared.utils.logger import get_logger
@@ -34,9 +34,9 @@ logger = get_logger("06_eval", config.LOGS_DIR)
 def main() -> None:
     config.ensure_dirs()
 
-    questions = parse_example_md(config.EXAMPLE_MD)
+    questions = parse_example_csv(config.EXAMPLE_CSV)
     if not questions:
-        raise RuntimeError(f"No questions parsed from {config.EXAMPLE_MD}")
+        raise RuntimeError(f"No questions parsed from {config.EXAMPLE_CSV}")
 
     print(f"[06_eval] running on {len(questions)} questions...")
     t0 = time.perf_counter()
@@ -88,8 +88,8 @@ def main() -> None:
     print(f"  API JSON valid: {metrics['api_json_valid_rate']:.1%} ({api_json_valid}/{len(api_results)})")
     print(f"  Doc format valid: {metrics['doc_format_valid_rate']:.1%} ({doc_format_valid}/{len(doc_results)})")
     print(f"  Avg time: {metrics['avg_time_response']:.2f}s  (target: <{config.TIME_RESPONSE_TARGET}s)")
-    print(f"  Saved → {out_pred}")
-    print(f"  Saved → {out_metrics}")
+    print(f"  Saved -> {out_pred}")
+    print(f"  Saved -> {out_metrics}")
 
     if metrics["avg_time_response"] > config.TIME_RESPONSE_TARGET:
         print(f"  ⚠ avg time > {config.TIME_RESPONSE_TARGET}s — cần optimize")
