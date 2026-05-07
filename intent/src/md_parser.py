@@ -1,41 +1,43 @@
 from __future__ import annotations
 
-import re
+import csv
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from shared.types import Question
 
-_TABLE_ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|(.+?)\|(.+?)\|", re.MULTILINE)
 
+def parse_example_csv(csv_path: Path) -> list[Question]:
+    """Parse example_data_example_question.csv → list[Question].
 
-def _clean_cell(s: str) -> str:
-    return s.strip().replace("\\n", "\n")
-
-
-def parse_example_md(md_path: Path) -> list[Question]:
-    """Parse Example_Data_RAG.md → list[Question].
-
-    Dùng để train/eval classifier. note='nan' → call_api, else → call_document.
+    Cột: id | fun_question | note
+    note rỗng → call_api, có giá trị → call_document (chứa options A/B/C/D).
     """
-    text = md_path.read_text(encoding="utf-8")
     questions: list[Question] = []
-
-    for m in _TABLE_ROW_RE.finditer(text):
-        try:
-            qid = int(m.group(1).strip())
-        except ValueError:
-            continue
-        question = _clean_cell(m.group(2))
-        note_raw = _clean_cell(m.group(3))
-        note = None if note_raw.lower() in {"nan", "", "none"} else note_raw
-        if question:
-            questions.append(Question(id=qid, question=question, note=note))
-
+    with open(csv_path, encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            try:
+                qid = int(row["id"])
+            except (ValueError, KeyError):
+                continue
+            question = row.get("fun_question", "").strip()
+            note_raw = row.get("note", "").strip()
+            note = None if note_raw.lower() in {"nan", "", "none"} else note_raw
+            if question:
+                questions.append(Question(id=qid, question=question, note=note))
     return questions
 
 
-def parse_test_md(md_path: Path) -> list[Question]:
-    """Parse Test_Data_RAG.md → list[Question] (617 câu, không có ground truth)."""
-    return parse_example_md(md_path)
+def parse_test_csv(csv_path: Path) -> list[Question]:
+    """Parse Test_data.csv → list[Question] (617 câu, không có ground truth)."""
+    return parse_example_csv(csv_path)
+
+
+# --- Backward-compat aliases ---
+def parse_example_md(csv_path: Path) -> list[Question]:
+    return parse_example_csv(csv_path)
+
+
+def parse_test_md(csv_path: Path) -> list[Question]:
+    return parse_test_csv(csv_path)

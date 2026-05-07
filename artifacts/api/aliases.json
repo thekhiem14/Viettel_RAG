@@ -1,0 +1,642 @@
+{
+  "priorityList": [
+    {
+      "key": "Highest",
+      "value": "Highest"
+    },
+    {
+      "key": "High",
+      "value": "High"
+    },
+    {
+      "key": "Medium",
+      "value": "Medium"
+    },
+    {
+      "key": "Low",
+      "value": "Low"
+    },
+    {
+      "key": "Lowest",
+      "value": "Lowest"
+    }
+  ],
+  "assetGroup": [
+    {
+      "key": "Thiết bị văn phòng",
+      "value": "TBVP"
+    },
+    {
+      "key": "Tài sản phục vụ sản xuất kinh doanh",
+      "value": "Tài sản phục vụ sản xuất kinh doanh"
+    },
+    {
+      "key": "Tài sản cố định",
+      "value": "Tài sản cố định"
+    },
+    {
+      "key": "Dịch vụ khác",
+      "value": "Dịch vụ khác"
+    },
+    {
+      "key": "Dịch vụ công nghệ thông tin",
+      "value": "Dịch vụ CNTT"
+    },
+    {
+      "key": "Công cụ dụng cụ",
+      "value": "Công cụ dụng cụ"
+    }
+  ],
+  "dtmsClass": [
+    {
+      "key": "Dự án Đầu tư hỗ trợ phát triển khoa học công nghệ",
+      "value": "Dự án Đầu tư hỗ trợ phát triển KHCN"
+    },
+    {
+      "key": "Dự án Đầu tư Mua sắm tài sản",
+      "value": "Dự án Đầu tư Mua sắm tài sản"
+    },
+    {
+      "key": "Dự án Đầu tư phát triển",
+      "value": "Dự án Đầu tư phát triển"
+    },
+    {
+      "key": "Dự án Đầu tư xây dựng",
+      "value": "Dự án Đầu tư xây dựng"
+    },
+    {
+      "key": "Mua sắm nhằm bảo đảm tính liên tục cho hoạt động sản xuất kinh doanh",
+      "value": "Mua sắm nhằm bảo đảm tính liên tục cho hoạt động SXKD"
+    },
+    {
+      "key": "Mua sắm nhằm duy trì hoạt động thường xuyên của Công ty",
+      "value": "Mua sắm nhằm duy trì hoạt động thường xuyên của Công ty"
+    }
+  ],
+  "procurementType": [
+    {
+      "key": "Hình thành gói thầu",
+      "value": "1"
+    },
+    {
+      "key": "Không hình thành gói thầu",
+      "value": "0"
+    }
+  ],
+  "dtmsType": [
+    {
+      "key": "Công nghệ thông tin",
+      "value": "CNTT"
+    },
+    {
+      "key": "Nghiên cứu sản xuất",
+      "value": "NCSX"
+    },
+    {
+      "key": "Vật tư",
+      "value": "Vật tư"
+    },
+    {
+      "key": "Xây dựng dân dụng - Khác",
+      "value": "XDDD-Khác"
+    }
+  ],
+  "isProbation": [
+    {
+      "key": "Đã duyệt",
+      "value": "1"
+    },
+    {
+      "key": "Chưa duyệt",
+      "value": "0"
+    }
+  ],
+  "lcntOption": [
+    {
+      "key": "1 giai đoạn 1 túi hồ sơ",
+      "value": "1"
+    },
+    {
+      "key": "1 giai đoạn 2 túi hồ sơ",
+      "value": "2"
+    },
+    {
+      "key": "2 giai đoạn 2 túi hồ sơ",
+      "value": "3"
+    }
+  ],
+  "lcntOptionDoing": [
+    {
+      "key": "Đấu thầu không qua mạng",
+      "value": "1"
+    },
+    {
+      "key": "Đấu thầu qua mạng",
+      "value": "2"
+    }
+  ],
+  "bidPlanType": [
+    {
+      "key": "Trong nước",
+      "value": "1"
+    },
+    {
+      "key": "Quốc tế",
+      "value": "2"
+    }
+  ],
+  "lcntDomainType": [
+    {
+      "key": "Mua sắm hàng hóa",
+      "value": "1"
+    },
+    {
+      "key": "Xây lắp",
+      "value": "2"
+    },
+    {
+      "key": "Tư vấn",
+      "value": "3"
+    },
+    {
+      "key": "Phi tư vấn",
+      "value": "4"
+    },
+    {
+      "key": "Hỗn hợp",
+      "value": "5"
+    }
+  ],
+  "gtStatus": [
+    {
+      "key": "Chờ mở thầu",
+      "value": "5"
+    },
+    {
+      "key": "Đã Báo cáo đánh giá hồ sơ dự thầu",
+      "value": "8"
+    },
+    {
+      "key": "Đã đóng thầu",
+      "value": "7"
+    },
+    {
+      "key": "Đã duyệt kế hoạch lựa chọn nhà thầu",
+      "value": "3"
+    },
+    {
+      "key": "Đã duyệt kết quả lựa chọn nhà thầu",
+      "value": "4"
+    },
+    {
+      "key": "Đã hủy kế hoạch lựa chọn nhà thầu",
+      "value": "15"
+    },
+    {
+      "key": "Đã hủy kết quả lựa chọn nhà thầu",
+      "value": "14"
+    },
+    {
+      "key": "Đã hủy trình ký kết quả lựa chọn nhà thầu",
+      "value": "11"
+    }
+  ],
+  "lcntType": [
+    {
+      "key": "Chủ đầu tư",
+      "value": "5"
+    },
+    {
+      "key": "Chào hàng cạnh tranh",
+      "value": "4"
+    },
+    {
+      "key": "Đấu thầu hạn chế",
+      "value": "2"
+    },
+    {
+      "key": "Đầu tư rời rạc",
+      "value": "1"
+    },
+    {
+      "key": "Hình thức đặc biệt",
+      "value": "7"
+    },
+    {
+      "key": "Mua sắm tập trung",
+      "value": "3"
+    },
+    {
+      "key": "Tự thực hiện",
+      "value": "6"
+    }
+  ],
+  "hdStatus": [
+    {
+      "key": "Chưa ký",
+      "value": "0"
+    },
+    {
+      "key": "Đã ký",
+      "value": "1"
+    },
+    {
+      "key": "Đã thanh lý",
+      "value": "3"
+    },
+    {
+      "key": "Đang thực hiện",
+      "value": "2"
+    }
+  ],
+  "position": [
+    {
+      "key": "Developer",
+      "value": "DEV"
+    },
+    {
+      "key": "Business Analyst",
+      "value": "BA"
+    },
+    {
+      "key": "UI/UX Designer",
+      "value": "UIUX"
+    },
+    {
+      "key": "Project Manager",
+      "value": "PM"
+    },
+    {
+      "key": "Veterinary Health Knowledge Technician",
+      "value": "VHKT"
+    },
+    {
+      "key": "Data Analyst",
+      "value": "DATA"
+    },
+    {
+      "key": "Tester",
+      "value": "TESTER"
+    },
+    {
+      "key": "AI Engineer",
+      "value": "AI"
+    }
+  ],
+  "level": [
+    {
+      "key": "Đang Cập Nhật",
+      "value": "Đang Cập Nhật"
+    },
+    {
+      "key": "Fresher",
+      "value": "F"
+    },
+    {
+      "key": "Junior",
+      "value": "J"
+    },
+    {
+      "key": "Junior+",
+      "value": "J+"
+    },
+    {
+      "key": "Middle",
+      "value": "M"
+    },
+    {
+      "key": "Middle+",
+      "value": "M+"
+    },
+    {
+      "key": "Senior",
+      "value": "S"
+    }
+  ],
+  "organization": [
+    {
+      "key": "Trung tâm phần mềm quản trị",
+      "value": "TTPMQT"
+    },
+    {
+      "key": "Trung tâm phần mềm viễn thông",
+      "value": "TTPMVT"
+    },
+    {
+      "key": "Trung tâm phần mềm tài chính số",
+      "value": "TTPMTCS"
+    },
+    {
+      "key": "Trung tâm phần mềm công nghệ mới",
+      "value": "TTPMCNM"
+    },
+    {
+      "key": "Trung tâm phần mềm chuyển đổi số",
+      "value": "TTPMCDS"
+    },
+    {
+      "key": "Trung tâm công nghệ đặc thù",
+      "value": "TTCNDT"
+    },
+    {
+      "key": "Trung tâm công nghệ",
+      "value": "TTCN"
+    }
+  ],
+  "projectStatus": [
+    {
+      "key": "Trạng thái tiền bán hàng",
+      "value": "presale"
+    },
+    {
+      "key": "Trong tiến trình",
+      "value": "in-progress"
+    },
+    {
+      "key": "Đã đóng",
+      "value": "closed"
+    },
+    {
+      "key": "Đang mở",
+      "value": "open"
+    },
+    {
+      "key": "Hoàn thành",
+      "value": "hold"
+    }
+  ],
+  "projectType": [
+    {
+      "key": "T&M",
+      "value": "T&M"
+    },
+    {
+      "key": "Presales",
+      "value": "presales"
+    },
+    {
+      "key": "Package",
+      "value": "package"
+    },
+    {
+      "key": "ODC/OSDC",
+      "value": "odc/osdc"
+    }
+  ],
+  "orgAlias": [
+    {
+      "key": "DTPC - Phòng Đầu tư Pháp chế",
+      "value": "DTPC"
+    },
+    {
+      "key": "HTKD - Phòng Hỗ trợ kinh doanh",
+      "value": "HTKD"
+    },
+    {
+      "key": "KDGPDN - Phòng Kinh doanh Giải pháp Doanh nghiệp",
+      "value": "KDGPDN"
+    },
+    {
+      "key": "KDQT - Phòng Kinh doanh Quốc tế",
+      "value": "KDQT"
+    }
+  ],
+  "customerList": [
+    {
+      "key": "UNITEL- STAR TELECOM CO., LTD",
+      "value": "UNITEL- STAR TELECOM CO., LTD"
+    }
+  ],
+  "trainGroup": [
+    {
+      "key": "Chứng chỉ chuyên môn",
+      "value": "Chứng chỉ chuyên môn"
+    },
+    {
+      "key": "Đào tạo chuyên môn, nghiệp vụ",
+      "value": "Đào tạo chuyên môn, nghiệp vụ"
+    },
+    {
+      "key": "Đào tạo hội nhập",
+      "value": "Đào tạo hội nhập"
+    },
+    {
+      "key": "Đào tạo tiếng anh",
+      "value": "Đào tạo tiếng anh"
+    },
+    {
+      "key": "Thực tập sinh",
+      "value": "Thực tập sinh"
+    }
+  ],
+  "customerDebt": [
+    {
+      "key": "Bệnh viện đa khoa Tâm Trí Đà Nẵng",
+      "value": "NCC363"
+    },
+    {
+      "key": "Bệnh viện đa khoa tỉnh Thái Bình",
+      "value": "NCC1012"
+    },
+    {
+      "key": "Công ty Cổ phần Chuyển đổi số VIETANTS",
+      "value": "KH0017"
+    },
+    {
+      "key": "Công ty cổ phần Công nghệ VVT",
+      "value": "KH0011"
+    },
+    {
+      "key": "Công ty Cổ phần Đầu tư MOBINO",
+      "value": "KH0071"
+    },
+    {
+      "key": "Công ty Cổ phần Dịch vụ di động Thế hệ mới",
+      "value": "KH0012"
+    },
+    {
+      "key": "Công ty Cổ phần Giải pháp Siêu Việt",
+      "value": "KH0035"
+    },
+    {
+      "key": "Công ty Cổ phần HESMAN Việt Nam",
+      "value": "KH0036"
+    },
+    {
+      "key": "Công ty Cổ phần Hitex Toàn cầu",
+      "value": "KH0037"
+    },
+    {
+      "key": "Công ty cổ phần phần mềm Revotech",
+      "value": "KH0045"
+    },
+    {
+      "key": "Công ty cổ phần Tư vấn và Dịch vụ Viettel",
+      "value": "KH0004"
+    },
+    {
+      "key": "Công ty TNHH Bảo hiểm nhân thọ MB AGEAS",
+      "value": "KH0016"
+    },
+    {
+      "key": "Công ty TNHH Công nghệ ALTEK",
+      "value": "KH0066"
+    },
+    {
+      "key": "Công ty TNHH công nghệ AZT Việt Nam",
+      "value": "KH0018"
+    },
+    {
+      "key": "Công ty TNHH công nghệ điện tử Nam Phong",
+      "value": "KH0043"
+    },
+    {
+      "key": "Công ty TNHH Công nghệ và Dịch vụ A.I Housing",
+      "value": "KH0020"
+    },
+    {
+      "key": "Công ty TNHH Dịch vụ MK Homes",
+      "value": "KH0028"
+    },
+    {
+      "key": "Công ty TNHH Dịch vụ và Công nghệ Linh Châu",
+      "value": "KH0026"
+    },
+    {
+      "key": "Công ty TNHH DV TM Construc House",
+      "value": "KH0022"
+    },
+    {
+      "key": "Công ty TNHH DVTM Newlight",
+      "value": "KH0023"
+    },
+    {
+      "key": "Công ty TNHH Mobile Distribution Việt Nam",
+      "value": "KH0075"
+    },
+    {
+      "key": "Công ty TNHH MTV Thể thao Viettel",
+      "value": "KH0074"
+    },
+    {
+      "key": "Công ty TNHH Thương mại Dịch vụ Olive Land",
+      "value": "KH0021"
+    },
+    {
+      "key": "Công ty TNHH Thương mại Happy Phone",
+      "value": "KH0070"
+    },
+    {
+      "key": "Công ty TNHH thương mại phát triển dịch vụ Bách Mộc",
+      "value": "KH0024"
+    },
+    {
+      "key": "Công ty TNHH Thương mại và Dịch vụ Bắc Bình",
+      "value": "KH0067"
+    },
+    {
+      "key": "Công ty TNHH Thương mại và Xuất nhập khẩu CLICKBUY",
+      "value": "KH0041"
+    },
+    {
+      "key": "Công ty TNHH TM và DV QT.Land",
+      "value": "KH0025"
+    },
+    {
+      "key": "Công ty TNHH TMDV Thảo Điền Cityland",
+      "value": "KH0027"
+    },
+    {
+      "key": "Công ty TNHH truyền thông quảng cáo CD Group",
+      "value": "KH0031"
+    },
+    {
+      "key": "Công ty TNHH UPVIET",
+      "value": "KH0042"
+    },
+    {
+      "key": "Công ty TNHH Viettel - CHT",
+      "value": "KH0033"
+    },
+    {
+      "key": "Deeeplabs Pte Ltd",
+      "value": "KH0051"
+    },
+    {
+      "key": "E-Money Payment Solution Plc",
+      "value": "KH0065"
+    },
+    {
+      "key": "Movitel, S.A",
+      "value": "KH0047"
+    },
+    {
+      "key": "National Telecom S.A(Natcom)",
+      "value": "KH0019"
+    },
+    {
+      "key": "Ngân hàng Thương mại Cổ phần Hàng hải Việt Nam",
+      "value": "KH0072"
+    },
+    {
+      "key": "Ngân hàng thương mại cổ phần Tiên Phong",
+      "value": "KH0049"
+    },
+    {
+      "key": "Ngân hàng TMCP Quốc dân",
+      "value": "KH0048"
+    },
+    {
+      "key": "Skyiq Pte. Ltd",
+      "value": "KH0050"
+    },
+    {
+      "key": "Star Telecom Co., Ltd",
+      "value": "KH0052"
+    },
+    {
+      "key": "Tập đoàn Công nghiệp - Viễn thông Quân đội",
+      "value": "KH0054"
+    },
+    {
+      "key": "Telecom International Myanmar Co.,LTD",
+      "value": "KH0053"
+    },
+    {
+      "key": "Tổng Công ty Cổ phần Bưu chính Viettel",
+      "value": "KH0013"
+    },
+    {
+      "key": "Tổng Công ty Cổ phần Công trình Viettel",
+      "value": "KH0056"
+    },
+    {
+      "key": "Tổng Công ty cổ phần Đầu tư Quốc tế Viettel",
+      "value": "KH0010"
+    },
+    {
+      "key": "Tổng công ty Hàng không Việt Nam – CTCP",
+      "value": "KH0001"
+    },
+    {
+      "key": "Viettel (Cambodia) PTE.,LTD",
+      "value": "KH0046"
+    },
+    {
+      "key": "Viettel Burundi S.A",
+      "value": "KH0061"
+    },
+    {
+      "key": "Viettel Peru S.A.C",
+      "value": "KH0062"
+    },
+    {
+      "key": "Viettel Tanzania Public Limited Company",
+      "value": "KH0076"
+    },
+    {
+      "key": "Viettel Timor Unipessoal LDA",
+      "value": "KH0063"
+    }
+  ]
+}

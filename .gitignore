@@ -4,7 +4,6 @@ training_data_update
 data/Document_config_data
 
 # Built artifacts — lớn, regenerate được
-artifacts/
 synthetic/
 outputs/
 
@@ -35,6 +34,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pyc
 
 # IDE
 .vscode/
@@ -58,3 +58,6 @@ htmlcov/
 .env.local
 *.pem
 .env.example
+
+128b50b3-637a-445f-b18f-92c64beb5e7a
+.claude

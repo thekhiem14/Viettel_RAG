@@ -1,24 +1,46 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+
+import config
 from shared.types import APIEntry, Chunk
 
+_aliases: dict[str, list[dict]] | None = None
 
-def _format_params(params: list[dict]) -> str:
+
+def _load_aliases() -> dict[str, list[dict]]:
+    global _aliases
+    if _aliases is None:
+        try:
+            with open(config.API_ALIASES, encoding="utf-8") as f:
+                _aliases = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            _aliases = {}
+    return _aliases
+
+
+def _format_params(params: list[dict], aliases: dict[str, list[dict]]) -> str:
     if not params:
         return "  (none)"
     lines = []
     for p in params:
-        lines.append(f"  - {p['name']} ({p['type']}): {p.get('description', '')}")
+        name = p["name"]
+        desc = p.get("description", "")
+        enum_values = aliases.get(name)
+        if enum_values:
+            valid = ", ".join(str(v.get("value", v.get("key", ""))) for v in enum_values)
+            desc = f"{desc} [valid values: {valid}]" if desc else f"[valid values: {valid}]"
+        lines.append(f"  - {name} ({p['type']}): {desc}")
     return "\n".join(lines)
 
 
-def _format_api_entry(idx: int, entry: APIEntry) -> str:
-    required = _format_params(entry.required_params)
-    optional = _format_params(entry.optional_params)
+def _format_api_entry(idx: int, entry: APIEntry, aliases: dict[str, list[dict]]) -> str:
+    required = _format_params(entry.required_params, aliases)
+    optional = _format_params(entry.optional_params, aliases)
     return (
         f"[{idx}] func_code: {entry.func_code}\n"
         f"    Tên: {entry.name}\n"
@@ -39,8 +61,9 @@ def build_api_prompt(question: str, candidates: list[APIEntry]) -> str:
     Returns:
         Prompt string để pass vào qwen.generate()
     """
+    aliases = _load_aliases()
     api_blocks = "\n\n".join(
-        _format_api_entry(i + 1, entry) for i, entry in enumerate(candidates)
+        _format_api_entry(i + 1, entry, aliases) for i, entry in enumerate(candidates)
     )
 
     func_codes = ", ".join(e.func_code for e in candidates)
