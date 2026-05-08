@@ -38,7 +38,7 @@ with open(config.EXAMPLE_RESULT_CSV, encoding="utf-8-sig", newline="") as f:
         if fc:
             ground_truth[r["id"]] = fc
             sample_ids.append(r["id"])
-            if len(sample_ids) >= 20:
+            if len(sample_ids) >= 120:
                 break
 
 print(f"[setup] sampled {len(sample_ids)} call_api questions with mapped GT")

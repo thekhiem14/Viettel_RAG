@@ -52,6 +52,9 @@ RRF_K              = 60
 RERANK_TOP_K       = 5
 API_RETRIEVE_TOP_K = 5   # TODO: test top_k=10 — nếu latency cho phép thì tăng
 
+# --- Intent (cosine vs API embeddings) ---
+INTENT_COSINE_THRESHOLD = 0.55  # TODO: tune trên example_data 100 câu
+
 # --- LLM ---
 LLM_MAX_NEW_TOKENS = 512
 LLM_THINKING_MODE  = False

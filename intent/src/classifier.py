@@ -1,3 +1,8 @@
+"""Intent classifier dùng cosine similarity giữa query embedding và 131 API embeddings.
+
+Đề bài cấm dùng `note` để phân loại intent — chỉ được dùng `id` và `question`.
+Nguồn vector: artifacts/api/faiss.index (131 × 1024-dim, L2-normalized, bge-m3).
+"""
 from __future__ import annotations
 
 import sys
@@ -6,44 +11,43 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import config
-from intent.src.features import extract_features
+from rag.src.indexing.embedder import Embedder
+from rag.src.indexing.faiss_store import FaissStore
 from shared.types import Question
 
-_clf = None
+_embedder: Embedder | None = None
+_faiss: FaissStore | None = None
 
 
-def _get_clf():
-    global _clf
-    if _clf is None:
-        from shared.utils.io import load_pickle
-        _clf = load_pickle(config.CLASSIFIER)
-    return _clf
+def _get_embedder() -> Embedder:
+    global _embedder
+    if _embedder is None:
+        _embedder = Embedder()
+    return _embedder
+
+
+def _get_faiss() -> FaissStore:
+    global _faiss
+    if _faiss is None:
+        store = FaissStore()
+        store.load(config.API_FAISS)
+        _faiss = store
+    return _faiss
 
 
 def predict(question: Question) -> tuple[str, float]:
-    """Predict intent: 'call_document' | 'call_api', và confidence score.
+    """Predict intent: 'call_api' nếu cosine sim cao, 'call_document' nếu thấp.
 
-    Falls back to rule-based nếu model chưa train:
-    - note is not None → call_document
-    - note is None → call_api
+    KHÔNG dùng question.note — đề bài cấm.
     """
-    try:
-        import numpy as np
-        bundle = _get_clf()
-        tfidf = bundle["tfidf"]
-        clf = bundle["clf"]
+    embedder = _get_embedder()
+    faiss = _get_faiss()
 
-        X_tfidf = tfidf.transform([question.question]).toarray()
-        X_feats = np.array([extract_features(question.question, question.note)])
-        X = np.hstack([X_tfidf, X_feats])
+    query_vec = embedder.encode_query(question.question)
+    hits = faiss.search(query_vec, top_k=1)
 
-        proba = clf.predict_proba(X)[0]
-        classes = list(clf.classes_)
-        label = classes[proba.argmax()]
-        confidence = float(proba.max())
-        return label, confidence
-    except Exception:
-        # Rule-based fallback (100% accurate cho data này)
-        if question.note is not None and question.note.strip().lower() not in {"nan", "none", ""}:
-            return "call_document", 1.0
-        return "call_api", 1.0
+    sim = hits[0].score if hits else 0.0
+
+    if sim >= config.INTENT_COSINE_THRESHOLD:
+        return "call_api", sim
+    return "call_document", 1.0 - sim

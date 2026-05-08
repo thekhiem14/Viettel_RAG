@@ -12,7 +12,7 @@ def parse_example_csv(csv_path: Path) -> list[Question]:
     """Parse example_data_example_question.csv → list[Question].
 
     Cột: id | fun_question | note
-    note rỗng → call_api, có giá trị → call_document (chứa options A/B/C/D).
+    note chỉ được tiêu thụ SAU KHI intent classifier xác định = call_document.
     """
     questions: list[Question] = []
     with open(csv_path, encoding="utf-8-sig", newline="") as f:
