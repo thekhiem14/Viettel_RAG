@@ -1,4 +1,4 @@
-"""Build API indices: parse CSV -> 131 APIEntry -> encode -> save FAISS + BM25 + Fuzzy + schemas.
+"""Build API indices: parse CSV -> 131 APIEntry -> encode -> save FAISS + BM25 + schemas.
 
 Usage:
     python rag/scripts/03_build_api_index.py            # skip nếu artifact đã tồn tại
@@ -22,14 +22,13 @@ from rag.src.indexing.api_parser import parse_alias_csv, parse_api_csv
 from rag.src.indexing.bm25_store import BM25Store
 from rag.src.indexing.embedder import Embedder
 from rag.src.indexing.faiss_store import FaissStore
-from rag.src.indexing.fuzzy_store import FuzzyStore
 from shared.utils.io import save_json
 from shared.utils.timer import timed
 
 def main(force: bool = False) -> None:
     config.ensure_dirs()
 
-    artifacts = [config.API_SCHEMAS, config.API_FAISS, config.API_BM25, config.API_FUZZY, config.API_ALIASES]
+    artifacts = [config.API_SCHEMAS, config.API_FAISS, config.API_BM25, config.API_ALIASES]
     if not force and all(p.exists() for p in artifacts):
         print(f"[03_build_api] all artifacts exist -> skip. Use --force to rebuild.")
         for p in artifacts:
@@ -50,10 +49,6 @@ def main(force: bool = False) -> None:
 
     ids = [e.func_code for e in entries]
     bm25_texts = [f"{e.name} {e.description} {e.example_question}" for e in entries]
-    fuzzy_targets = [
-        {"id": e.func_code, "func_code": e.func_code, "name": e.name, "text": f"{e.name} {e.description}"}
-        for e in entries
-    ]
 
     with timed("embed API entries (bge-m3)"):
         embedder = Embedder()
@@ -71,12 +66,6 @@ def main(force: bool = False) -> None:
         bm25_store.build(bm25_texts, ids)
         bm25_store.save(config.API_BM25)
     print(f"[03_build_api] saved BM25 -> {config.API_BM25}")
-
-    with timed("build + save Fuzzy"):
-        fuzzy_store = FuzzyStore()
-        fuzzy_store.build(fuzzy_targets)
-        fuzzy_store.save(config.API_FUZZY)
-    print(f"[03_build_api] saved Fuzzy -> {config.API_FUZZY}")
 
     with timed("parse + save aliases"):
         aliases = parse_alias_csv(config.API_ALIAS_CSV)

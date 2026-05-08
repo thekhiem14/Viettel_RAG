@@ -6,6 +6,7 @@ data/Document_config_data
 # Built artifacts — lớn, regenerate được
 synthetic/
 outputs/
+models/
 
 # Logs
 logs/
@@ -61,3 +62,5 @@ htmlcov/
 
 128b50b3-637a-445f-b18f-92c64beb5e7a
 .claude
+
+local_requirements.txt

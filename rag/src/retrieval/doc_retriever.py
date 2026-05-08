@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 import sys
 from pathlib import Path
@@ -12,7 +11,7 @@ from rag.src.indexing.bm25_store import BM25Store
 from rag.src.indexing.embedder import Embedder
 from rag.src.indexing.faiss_store import FaissStore
 from rag.src.retrieval.rrf import rrf_fusion
-from shared.types import Chunk, RetrievalHit
+from shared.types import Chunk
 from shared.utils.io import load_jsonl
 
 _PUBLIC_RE = re.compile(r"Public_\d+")
@@ -73,9 +72,9 @@ class DocRetriever:
 
         query_vec = embedder.encode_query(query)
         faiss_hits = self._faiss.search(query_vec, top_k=top_k * 2, filter_fn=filter_fn)
-        bm25_hits = self._bm25.search(query, top_k=top_k * 2)
+        bm25_fetch = top_k * 10 if doc_id else top_k * 2
+        bm25_hits = self._bm25.search(query, top_k=bm25_fetch)
 
-        # BM25 post-filter nếu có doc_id
         if doc_id:
             bm25_hits = [h for h in bm25_hits if h.id.startswith(doc_id)]
 

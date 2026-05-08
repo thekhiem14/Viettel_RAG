@@ -31,7 +31,6 @@ DOC_BM25    = ARTIFACTS_DIR / "docs" / "bm25.pkl"
 API_SCHEMAS = ARTIFACTS_DIR / "api" / "schemas.json"
 API_FAISS   = ARTIFACTS_DIR / "api" / "faiss.index"
 API_BM25    = ARTIFACTS_DIR / "api" / "bm25.pkl"
-API_FUZZY   = ARTIFACTS_DIR / "api" / "fuzzy_targets.json"
 CLASSIFIER  = ARTIFACTS_DIR / "classifier" / "intent.pkl"
 
 # --- Models ---
@@ -54,6 +53,12 @@ API_RETRIEVE_TOP_K = 5   # TODO: test top_k=10 — nếu latency cho phép thì 
 
 # --- Intent (cosine vs API embeddings) ---
 INTENT_COSINE_THRESHOLD = 0.55  # TODO: tune trên example_data 100 câu
+
+# --- Doc retrieval filter ---
+DOC_USE_FILTER = True  # False để tắt Public_XXX filter nếu đề bài cấm
+
+# --- Debug / eval ---
+SKIP_LLM = True  # True để bỏ qua LLM (retrieval-only eval, nhanh hơn)
 
 # --- LLM ---
 LLM_MAX_NEW_TOKENS = 512

@@ -13,6 +13,9 @@ from rag.src.llm.prompts import build_api_prompt
 from rag.src.llm.qwen import generate
 from rag.src.retrieval.api_retriever import APIRetriever
 from shared.types import APIEntry, Question
+from shared.utils.logger import get_logger
+
+logger = get_logger("api_pipeline", config.LOGS_DIR)
 
 _retriever: APIRetriever | None = None
 _schemas: dict[str, APIEntry] | None = None
@@ -41,28 +44,27 @@ def run(question: Question) -> dict:
         function_result là JSON string: {"func_code": ..., "path": ..., "body": {...}}
     """
     t_start = time.perf_counter()
-
     retriever = _get_retriever()
     schemas = _get_schemas()
 
+    t0 = time.perf_counter()
     hits = retriever.search(question.question)
-
-    candidates: list[APIEntry] = []
-    for hit in hits:
-        if hit.id in schemas:
-            candidates.append(schemas[hit.id])
-
+    candidates: list[APIEntry] = [schemas[h.id] for h in hits if h.id in schemas]
     if not candidates:
-        # fallback nếu retriever trả về kết quả không có trong schemas
         candidates = list(schemas.values())[:config.API_RETRIEVE_TOP_K]
+    logger.info("stage_retrieval", extra={"id": question.id, "n_candidates": len(candidates), "top1": candidates[0].func_code if candidates else "", "ms": round((time.perf_counter() - t0) * 1000)})
 
-    prompt = build_api_prompt(question.question, candidates)
-    raw_output = generate(prompt)
-
-    result = validate_api_output(raw_output, candidates)
+    if config.SKIP_LLM:
+        result = {"func_code": candidates[0].func_code, "path": candidates[0].path, "body": {}}
+        logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": result["func_code"]})
+    else:
+        t0 = time.perf_counter()
+        prompt = build_api_prompt(question.question, candidates)
+        raw_output = generate(prompt)
+        result = validate_api_output(raw_output, candidates)
+        logger.info("stage_llm", extra={"id": question.id, "func_code": result.get("func_code"), "ms": round((time.perf_counter() - t0) * 1000)})
 
     time_response = round(time.perf_counter() - t_start, 3)
-
     return {
         "id": question.id,
         "function_code": "call_api",

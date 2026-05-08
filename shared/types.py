@@ -37,5 +37,5 @@ class APIEntry:
 class RetrievalHit:
     id: str       # chunk_id hoặc func_code
     score: float
-    source: str   # "bm25" | "faiss" | "fuzzy"
+    source: str   # "bm25" | "faiss" | "rrf"
     rank: int

@@ -17,7 +17,7 @@ def rrf_fusion(
     score(d) = Σ 1 / (k + rank_i(d))
 
     Args:
-        results_per_source: each inner list is top-N hits from one source (bm25/faiss/fuzzy)
+        results_per_source: each inner list is top-N hits from one source (bm25/faiss)
         k: RRF constant (60 is standard default)
         top_k: number of results to return
 

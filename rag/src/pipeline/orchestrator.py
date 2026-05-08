@@ -115,3 +115,6 @@ def run_batch(questions: list[Question]) -> list[dict]:
         if (i + 1) % 10 == 0:
             logger.info("batch_progress", extra={"done": i + 1, "total": len(questions)})
     return results
+
+if __name__ == "__main__":
+    warmup()
