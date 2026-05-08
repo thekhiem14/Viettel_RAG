@@ -14,9 +14,9 @@ MINERU_OUT_DIR = Path(os.getenv("MINERU_OUT_DIR", str(ROOT / "training_data_upda
 
 API_CSV       = DATA_DIR / "Tài_liệu_config_API_Doc_api_for_contest.csv"
 API_ALIAS_CSV = DATA_DIR / "Tài_liệu_config_API_Doc_alias_for_contest.csv"
-EXAMPLE_CSV   = DATA_DIR / "example_data_example_question.csv"
+EXAMPLE_CSV        = DATA_DIR / "example_data_example_question.csv"
 EXAMPLE_RESULT_CSV = DATA_DIR / "example_data_example_result.csv"
-TEST_MD       = DATA_DIR / "example_data_example_question.csv"
+TEST_CSV           = DATA_DIR / "Test_data.csv"
 
 # --- Artifacts (BUILT) ---
 ARTIFACTS_DIR = Path(os.getenv("ARTIFACTS_DIR", str(ROOT / "artifacts")))

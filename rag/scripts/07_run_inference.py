@@ -34,7 +34,7 @@ def main() -> None:
     warmup()
     print(f"[07_inference] warm-up done in {time.perf_counter() - t_warm:.1f}s\n")
 
-    questions = parse_test_md(config.TEST_MD)
+    questions = parse_test_md(config.TEST_CSV)
     if not questions:
         raise RuntimeError(f"No questions parsed from {config.TEST_MD}")
 
