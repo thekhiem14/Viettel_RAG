@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 from intent.src.md_parser import parse_example_csv
-from rag.src.pipeline.orchestrator import run_batch, warmup
+from rag.src.pipeline.orchestrator import run_batch
 from shared.utils.io import save_json, save_jsonl
 from shared.utils.logger import get_logger
 
@@ -67,12 +67,6 @@ def _parse_api_gt(func_param_gt: str) -> dict:
 
 def main() -> None:
     config.ensure_dirs()
-
-    # Warm-up TRƯỚC khi chạy để time_response không bị tính cold-start
-    print("[06_eval] warming up models...")
-    t_warm = time.perf_counter()
-    warmup()
-    print(f"[06_eval] warm-up done in {time.perf_counter() - t_warm:.1f}s\n")
 
     questions = parse_example_csv(config.EXAMPLE_CSV)
     if not questions:

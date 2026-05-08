@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import config
 from intent.src.md_parser import parse_test_md
-from rag.src.pipeline.orchestrator import run_batch, warmup
+from rag.src.pipeline.orchestrator import run_batch
 from shared.utils.logger import get_logger
 
 logger = get_logger("07_run_inference", config.LOGS_DIR)
@@ -28,15 +28,9 @@ logger = get_logger("07_run_inference", config.LOGS_DIR)
 def main() -> None:
     config.ensure_dirs()
 
-    # Warm-up TRƯỚC khi đọc file test để time_response không bị tính cold-start
-    print("[07_inference] warming up models...")
-    t_warm = time.perf_counter()
-    warmup()
-    print(f"[07_inference] warm-up done in {time.perf_counter() - t_warm:.1f}s\n")
-
     questions = parse_test_md(config.TEST_CSV)
     if not questions:
-        raise RuntimeError(f"No questions parsed from {config.TEST_MD}")
+        raise RuntimeError(f"No questions parsed from {config.TEST_CSV}")
 
     print(f"[07_inference] running on {len(questions)} test questions...")
     t0 = time.perf_counter()
