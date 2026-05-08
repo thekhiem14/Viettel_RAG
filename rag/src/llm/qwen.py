@@ -14,27 +14,41 @@ def _load() -> None:
     global _model, _tokenizer
     if _model is not None:
         return
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers import AutoModelForCausalLM, AutoTokenizer
     import torch
 
-    quant_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4",
-    )
+    has_cuda = torch.cuda.is_available()
+
+    if has_cuda:
+        from transformers import BitsAndBytesConfig
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+        )
+        model_kwargs = dict(
+            quantization_config=quant_config,
+            device_map="auto",
+        )
+    else:
+        # CPU fallback — chạy chậm hơn nhưng không crash
+        model_kwargs = dict(
+            torch_dtype=torch.float32,
+            device_map="cpu",
+        )
+
     _tokenizer = AutoTokenizer.from_pretrained(config.LLM_MODEL)
     _model = AutoModelForCausalLM.from_pretrained(
         config.LLM_MODEL,
-        quantization_config=quant_config,
-        device_map="auto",
         trust_remote_code=True,
+        **model_kwargs,
     )
     _model.eval()
 
 
 def generate(prompt: str) -> str:
-    """Gọi Qwen3-4B (4-bit, thinking OFF) với prompt text, trả về raw string output."""
+    """Gọi Qwen3-4B (thinking OFF) với prompt text, trả về raw string output."""
     _load()
     import torch
 
@@ -43,7 +57,7 @@ def generate(prompt: str) -> str:
         messages,
         tokenize=False,
         add_generation_prompt=True,
-        enable_thinking=False,  # thinking OFF
+        enable_thinking=False,
     )
     inputs = _tokenizer(text, return_tensors="pt").to(_model.device)
 
@@ -56,6 +70,5 @@ def generate(prompt: str) -> str:
             pad_token_id=_tokenizer.eos_token_id,
         )
 
-    # Chỉ decode phần generated (bỏ input tokens)
     generated = output_ids[0][inputs["input_ids"].shape[1]:]
     return _tokenizer.decode(generated, skip_special_tokens=True).strip()

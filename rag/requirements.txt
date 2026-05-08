@@ -10,10 +10,11 @@ pyvi==0.1.1
 rapidfuzz==3.13.0
 
 # LLM
-transformers==4.44.2
+transformers==4.51.3
 sentence-transformers==3.0.1
 bitsandbytes==0.43.3
 accelerate==0.34.2
+tokenizers==0.21.0
 
 # Chunking
 markdown-it-py==3.0.0
@@ -28,4 +29,4 @@ numpy==1.26.4
 python-dotenv==1.0.1
 tqdm==4.67.1
 
-protobuf==5.28.3
+protobuf==5.29.3
