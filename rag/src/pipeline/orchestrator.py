@@ -25,40 +25,65 @@ def warmup() -> None:
     def _stage(name: str, fn) -> None:
         t = time.perf_counter()
         fn()
-        print(f"[warmup] {name}: {time.perf_counter() - t:.2f}s")
+        elapsed = time.perf_counter() - t
+        print(f"[warmup] {name}: {elapsed:.2f}s")
+
+    print("[warmup] Starting...")
+    t_total = time.perf_counter()
 
     # 1. Embedder (bge-m3) — dùng chung classifier + doc + api retrievers
     def _w_embedder() -> None:
         from rag.src.indexing.embedder import Embedder
+        print(f"  [1a] Importing + init Embedder... ", end="", flush=True)
+        t = time.perf_counter()
         Embedder().encode_query("warmup")
-    _stage("Embedder", _w_embedder)
+        print(f"{time.perf_counter() - t:.2f}s")
+    _stage("1. Embedder (bge-m3)", _w_embedder)
 
     # 2. APIRetriever + DocRetriever (load FAISS/BM25/Fuzzy + dummy search)
     def _w_retrievers() -> None:
         from rag.src.retrieval.api_retriever import APIRetriever
         from rag.src.retrieval.doc_retriever import DocRetriever
+        print(f"  [2a] APIRetriever.search()... ", end="", flush=True)
+        t = time.perf_counter()
         APIRetriever().search("warmup")
+        print(f"{time.perf_counter() - t:.2f}s")
+        print(f"  [2b] DocRetriever.search()... ", end="", flush=True)
+        t = time.perf_counter()
         DocRetriever().search("warmup", top_k=5)
-    _stage("Retrievers (API + Doc)", _w_retrievers)
+        print(f"{time.perf_counter() - t:.2f}s")
+    _stage("2. Retrievers (FAISS+BM25+Fuzzy)", _w_retrievers)
 
     # 3. Reranker (bge-reranker-v2-m3) — chỉ doc pipeline dùng
     def _w_reranker() -> None:
         from rag.src.retrieval.reranker import rerank
         from shared.types import Chunk
+        print(f"  [3a] rerank() + load model... ", end="", flush=True)
+        t = time.perf_counter()
         dummy = Chunk(chunk_id="_w", doc_id="_w", heading_path="_", level=0, char_count=5, text="dummy")
         rerank("warmup", [dummy], top_k=1)
-    _stage("Reranker", _w_reranker)
+        print(f"{time.perf_counter() - t:.2f}s")
+    _stage("3. Reranker (bge-reranker-v2-m3)", _w_reranker)
 
     # 4. LLM (Qwen3-4B 4-bit) — chậm nhất, ~10-30s lần đầu
     def _w_llm() -> None:
         from rag.src.llm.qwen import generate
-        generate("Trả lời 'A':")
-    _stage("LLM (Qwen3-4B)", _w_llm)
+        print(f"  [4a] generate() load model + tokenizer... ", end="", flush=True)
+        t = time.perf_counter()
+        output = generate("Trả lời 'A':")
+        print(f"{time.perf_counter() - t:.2f}s (output: {len(output)} chars)")
+    _stage("4. LLM (Qwen3-4B 4-bit)", _w_llm)
 
     # 5. Intent classifier — wrapper quanh Embedder + FaissStore (đã warm ở #1+#2)
     def _w_intent() -> None:
-        predict(Question(id=0, question="warmup", note=None))
-    _stage("Intent classifier", _w_intent)
+        print(f"  [5a] predict() inference... ", end="", flush=True)
+        t = time.perf_counter()
+        label, conf = predict(Question(id=0, question="warmup", note=None))
+        print(f"{time.perf_counter() - t:.2f}s (label={label}, conf={conf:.3f})")
+    _stage("5. Intent classifier", _w_intent)
+
+    total_elapsed = time.perf_counter() - t_total
+    print(f"\n[warmup] DONE in {total_elapsed:.1f}s (ready for inference)\n")
 
 
 def run_one(question: Question) -> dict:

@@ -1,32 +1,32 @@
 # Embedding + Reranker
 FlagEmbedding==1.2.10
-faiss-cpu==1.8.0
-
+faiss-cpu>=1.8.0        # bỏ pin cứng — version mới tương thích numpy 2.x
+ 
 # BM25
 rank-bm25==0.2.2
 pyvi==0.1.1
-
+ 
 # Fuzzy matching
 rapidfuzz==3.13.0
-
+ 
 # LLM
-transformers==4.51.3
+transformers==4.57.6
 sentence-transformers==3.0.1
-bitsandbytes==0.43.3
+bitsandbytes==0.45.5    # 0.43.3 crash vì triton.ops bị xóa từ triton 3.0
 accelerate==0.34.2
-tokenizers==0.21.0
-
+tokenizers==0.22.2
+ 
 # Chunking
 markdown-it-py==3.0.0
 langchain-text-splitters==0.2.2
-
+ 
 # Data
 pandas==2.2.2
 openpyxl==3.1.5
-numpy==1.26.4
-
+# numpy — KHÔNG pin, để Colab dùng numpy 2.x mặc định
+ 
 # Utils
 python-dotenv==1.0.1
 tqdm==4.67.1
-
+ 
 protobuf==5.29.3
