@@ -58,7 +58,8 @@ def run(question: Question) -> dict:
     print(f"[api] id={question.id}  retrieval={ms_ret}ms  candidates={len(candidates)}  top1={top1}")
 
     if config.SKIP_LLM:
-        result = {"func_code": candidates[0].func_code, "path": candidates[0].path, "body": {}}
+        top1 = candidates[0]
+        result = {"func_code": top1.func_code, "path": top1.path, "body": top1.example_body or {}}
         logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": result["func_code"]})
         print(f"[api] id={question.id}  llm=SKIPPED  func_code={result['func_code']}")
     else:
