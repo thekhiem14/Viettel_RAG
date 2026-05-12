@@ -72,6 +72,7 @@ def run(question: Question) -> dict:
         print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={result.get('func_code')}")
 
     time_response = round(time.perf_counter() - t_start, 3)
+    print(f"[api] id={question.id}  body={result.get('body')}")
     print(f"[api] id={question.id}  TOTAL={time_response:.2f}s")
     return {
         "id": question.id,

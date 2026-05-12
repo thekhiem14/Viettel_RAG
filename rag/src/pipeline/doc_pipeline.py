@@ -76,12 +76,10 @@ def run(question: Question) -> dict:
     options = _parse_note(question.note or "")
     prompt = build_doc_prompt(top_chunks, question.question, options)
 
-    t0 = time.perf_counter()
     raw_output = generate(prompt)
     answer = _extract_answer(raw_output)
-    ms_llm = round((time.perf_counter() - t0) * 1000)
-    logger.info("stage_llm", extra={"id": question.id, "answer": answer, "ms": ms_llm})
-    print(f"[doc] id={question.id}  llm={ms_llm}ms  answer={answer}")
+    # logger.info("stage_llm", extra={"id": question.id, "answer": answer})
+    # print(f"[doc] id={question.id}  answer={answer}")
 
     time_response = round(time.perf_counter() - t_start, 3)
     return {
