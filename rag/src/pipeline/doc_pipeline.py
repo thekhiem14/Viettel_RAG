@@ -13,6 +13,9 @@ from rag.src.llm.qwen import generate
 from rag.src.retrieval.doc_retriever import DocRetriever
 from rag.src.retrieval.reranker import rerank
 from shared.types import Question
+from shared.utils.logger import get_logger
+
+logger = get_logger("doc_pipeline", config.LOGS_DIR)
 
 _retriever: DocRetriever | None = None
 
@@ -61,24 +64,35 @@ def run(question: Question) -> dict:
         function_result là chuỗi chữ cái đáp án, vd "A" hoặc "AB"
     """
     t_start = time.perf_counter()
-
     retriever = _get_retriever()
 
-    doc_id = DocRetriever.extract_doc_id(question.question)
+    t0 = time.perf_counter()
+    doc_id = DocRetriever.extract_doc_id(question.question) if config.DOC_USE_FILTER else None
     chunks = retriever.search(question.question, top_k=20, doc_id=doc_id)
+    ms_ret = round((time.perf_counter() - t0) * 1000)
+    logger.info("stage_retrieval", extra={"id": question.id, "n_chunks": len(chunks), "doc_id": doc_id, "ms": ms_ret})
+    print(f"[doc] id={question.id}  retrieval={ms_ret}ms  chunks={len(chunks)}  doc_id={doc_id}")
 
-    # Rerank top-20 → top-5
+    t0 = time.perf_counter()
     top_chunks = rerank(question.question, chunks, top_k=config.RERANK_TOP_K)
     if not top_chunks and chunks:
         top_chunks = chunks[:config.RERANK_TOP_K]
+    ms_rerank = round((time.perf_counter() - t0) * 1000)
+    logger.info("stage_rerank", extra={"id": question.id, "n_chunks": len(top_chunks), "ms": ms_rerank})
+    print(f"[doc] id={question.id}  rerank={ms_rerank}ms  top={len(top_chunks)}")
 
     options = _parse_note(question.note or "")
     prompt = build_doc_prompt(top_chunks, question.question, options)
+
+    t0 = time.perf_counter()
     raw_output = generate(prompt)
-
     answer = _extract_answer(raw_output)
-    time_response = round(time.perf_counter() - t_start, 3)
+    ms_llm = round((time.perf_counter() - t0) * 1000)
+    logger.info("stage_llm", extra={"id": question.id, "answer": answer, "ms": ms_llm})
+    print(f"[doc] id={question.id}  llm={ms_llm}ms  answer={answer}")
 
+    time_response = round(time.perf_counter() - t_start, 3)
+    print(f"[doc] id={question.id}  TOTAL={time_response:.2f}s  (ret={ms_ret}ms rerank={ms_rerank}ms llm={ms_llm}ms)")
     return {
         "id": question.id,
         "function_code": "call_document",
