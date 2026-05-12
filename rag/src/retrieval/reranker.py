@@ -30,7 +30,7 @@ def _get_reranker():
 def rerank(
     query: str,
     chunks: list[Chunk],
-    top_k: int = 5,
+    top_k: int = config.RERANK_TOP_K,
 ) -> list[Chunk]:
     """Cross-encoder rerank: trả về top_k chunks theo relevance score."""
 

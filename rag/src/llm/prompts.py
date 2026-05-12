@@ -112,5 +112,5 @@ def build_doc_prompt(chunks: list[Chunk], question: str, options: dict[str, str]
 Câu hỏi: {question}
 {options_text}
 
-Hãy lập luận ngắn gọn dựa vào tài liệu, rồi trả lời bằng chữ cái đáp án (có thể nhiều chữ cái nếu câu hỏi cho phép nhiều đáp án, ví dụ: AB).
+Chỉ trả lời bằng chữ cái đáp án, không giải thích, không suy nghĩ thêm. Có thể nhiều đáp án (ví dụ: AB).
 Đáp án:"""
