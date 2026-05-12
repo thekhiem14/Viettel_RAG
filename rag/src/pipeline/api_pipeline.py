@@ -52,19 +52,26 @@ def run(question: Question) -> dict:
     candidates: list[APIEntry] = [schemas[h.id] for h in hits if h.id in schemas]
     if not candidates:
         candidates = list(schemas.values())[:config.API_RETRIEVE_TOP_K]
-    logger.info("stage_retrieval", extra={"id": question.id, "n_candidates": len(candidates), "top1": candidates[0].func_code if candidates else "", "ms": round((time.perf_counter() - t0) * 1000)})
+    ms_ret = round((time.perf_counter() - t0) * 1000)
+    top1 = candidates[0].func_code if candidates else ""
+    logger.info("stage_retrieval", extra={"id": question.id, "n_candidates": len(candidates), "top1": top1, "ms": ms_ret})
+    print(f"[api] id={question.id}  retrieval={ms_ret}ms  candidates={len(candidates)}  top1={top1}")
 
     if config.SKIP_LLM:
         result = {"func_code": candidates[0].func_code, "path": candidates[0].path, "body": {}}
         logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": result["func_code"]})
+        print(f"[api] id={question.id}  llm=SKIPPED  func_code={result['func_code']}")
     else:
         t0 = time.perf_counter()
         prompt = build_api_prompt(question.question, candidates)
         raw_output = generate(prompt)
         result = validate_api_output(raw_output, candidates)
-        logger.info("stage_llm", extra={"id": question.id, "func_code": result.get("func_code"), "ms": round((time.perf_counter() - t0) * 1000)})
+        ms_llm = round((time.perf_counter() - t0) * 1000)
+        logger.info("stage_llm", extra={"id": question.id, "func_code": result.get("func_code"), "ms": ms_llm})
+        print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={result.get('func_code')}")
 
     time_response = round(time.perf_counter() - t_start, 3)
+    print(f"[api] id={question.id}  TOTAL={time_response:.2f}s")
     return {
         "id": question.id,
         "function_code": "call_api",

@@ -49,6 +49,12 @@ def _load_ground_truth() -> dict[str, dict]:
     return gt
 
 
+def _build_path_to_fc() -> dict[str, str]:
+    """path → func_code từ schemas.json."""
+    schemas = json.loads(config.API_SCHEMAS.read_text(encoding="utf-8"))
+    return {s["path"]: fc for fc, s in schemas.items() if s.get("path")}
+
+
 def _parse_answer(func_param_gt: str) -> str:
     """Extract đáp án A/B/C/D từ GT func_param JSON (field 'result')."""
     try:
@@ -58,11 +64,14 @@ def _parse_answer(func_param_gt: str) -> str:
         return ""
 
 
-def _parse_api_gt(func_param_gt: str) -> dict:
+def _parse_api_gt(func_param_gt: str, path_to_fc: dict[str, str]) -> dict:
+    """Parse GT func_param → {func_code, path}. func_code lấy qua path→schemas mapping."""
     try:
-        return json.loads(func_param_gt)
+        parsed = json.loads(func_param_gt)
+        path = parsed.get("path", "")
+        return {"func_code": path_to_fc.get(path, ""), "path": path}
     except Exception:
-        return {}
+        return {"func_code": "", "path": ""}
 
 
 def main() -> None:
@@ -73,6 +82,7 @@ def main() -> None:
         raise RuntimeError(f"No questions parsed from {config.EXAMPLE_CSV}")
 
     gt = _load_ground_truth()
+    path_to_fc = _build_path_to_fc()
 
     print(f"[06_eval] running on {len(questions)} questions...")
     t0 = time.perf_counter()
@@ -106,7 +116,7 @@ def main() -> None:
                 has_fields = "func_code" in pred and "path" in pred and "body" in pred
                 if has_fields:
                     api_json_valid += 1
-                gt_api = _parse_api_gt(gt_param)
+                gt_api = _parse_api_gt(gt_param, path_to_fc)
                 if pred.get("func_code") == gt_api.get("func_code"):
                     api_code_match += 1
                 if pred.get("path") == gt_api.get("path"):
