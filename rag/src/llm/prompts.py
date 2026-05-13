@@ -32,7 +32,12 @@ def _format_params(params: list[dict], aliases: dict[str, list[dict]]) -> str:
         desc = p.get("description", "")
         enum_values = aliases.get(name)
         if enum_values:
-            valid = ", ".join(str(v.get("value", v.get("key", ""))) for v in enum_values)
+            seen: list[str] = []
+            for v in enum_values:
+                val = str(v.get("value", v.get("key", "")))
+                if val and val not in seen:
+                    seen.append(val)
+            valid = ", ".join(seen)
             desc = f"{desc} [valid values: {valid}]" if desc else f"[valid values: {valid}]"
         lines.append(f"  - {name} ({p['type']}): {desc}")
     return "\n".join(lines)
@@ -50,21 +55,35 @@ def build_api_prompt(question: str, candidate: APIEntry) -> str:
         Prompt string để pass vào qwen.generate()
     """
     aliases = _load_aliases()
-    params_text = _format_params(candidate.required_params + candidate.optional_params, aliases)
-    example = json.dumps(candidate.example_body, ensure_ascii=False) if candidate.example_body else "{}"
+    required_text = _format_params(candidate.required_params, aliases)
+    optional_text = _format_params(candidate.optional_params, aliases)
 
-    return f"""Câu hỏi: {question}
+    return f"""Bạn là API body generator. Sinh body JSON cho API dưới đây dựa vào câu hỏi tiếng Việt.
+
+Câu hỏi: {question}
 
 API: {candidate.name}
-Params:
-{params_text}
-Example body: {example}
+Description: {candidate.description}
 
-Hướng dẫn:
-- Điền body từ thông tin trong câu hỏi theo đúng format example body
-- Ngày tháng dùng format yyyy-mm-dd
-- Nếu không đề cập, dùng [] cho List, null cho các kiểu khác
-- Chỉ trả về JSON body, không giải thích
+Required params (BẮT BUỘC phải có trong body):
+{required_text}
+
+Optional params (chỉ thêm vào body nếu câu hỏi đề cập; default [] cho List, null cho kiểu khác):
+{optional_text}
+
+Ghi chú quan trọng:
+- Ngày tháng dạng yyyy-mm-dd. Quy ước:
+  * "năm YYYY" → fromDate=YYYY-01-01, toDate=YYYY-12-31
+  * "Quý N/YYYY" hoặc "QN/YYYY" → quý N (Q1=01-01..03-31, Q2=04-01..06-30, Q3=07-01..09-30, Q4=10-01..12-31)
+  * "Tháng N/YYYY" hoặc "TN/YYYY" → ngày 1 đến ngày cuối của tháng N
+  * "TM/YYYY - TN/YYYY" hoặc "TM/YYYY -> TN/YYYY" → từ đầu tháng M đến cuối tháng N
+- Param `type`: ngày=1, tuần=2, tháng=3, quý=4, năm=5. Khi câu hỏi đề cập khoảng nhiều tháng/không rõ → 3.
+- Param `standardComparison`: trên/vượt ngưỡng=1, dưới ngưỡng=2.
+- Param `sort`: tăng dần=1, giảm dần=2.
+- Enum `projectType`: chỉ dùng đúng chữ "T&M", "presales", "odc/osdc", "package".
+- Enum `projectStatus`: chỉ dùng đúng chữ "in-progress", "hold", "closed", "presale", "open".
+- KHÔNG thêm key nào ngoài danh sách required + optional ở trên.
+- KHÔNG giải thích, chỉ trả về 1 JSON body hợp lệ.
 
 Body:"""
 

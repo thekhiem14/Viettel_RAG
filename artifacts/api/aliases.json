@@ -345,29 +345,29 @@
   ],
   "projectStatus": [
     {
-      "key": "Trạng thái tiền bán hàng",
+      "key": "Trạng thái tiền bán hàng / presale",
       "value": "presale"
     },
     {
-      "key": "Trong tiến trình",
+      "key": "Trong tiến trình / đang chạy / đang thực hiện / đang triển khai",
       "value": "in-progress"
     },
     {
-      "key": "Đã đóng",
+      "key": "Đã đóng / đóng dự án / closed",
       "value": "closed"
     },
     {
-      "key": "Đang mở",
+      "key": "Đang mở / mở dự án / open",
       "value": "open"
     },
     {
-      "key": "Hoàn thành",
+      "key": "Tạm dừng / hold",
       "value": "hold"
     }
   ],
   "projectType": [
     {
-      "key": "T&M",
+      "key": "T&M / Time and Material",
       "value": "T&M"
     },
     {
@@ -375,11 +375,11 @@
       "value": "presales"
     },
     {
-      "key": "Package",
+      "key": "Package / gói",
       "value": "package"
     },
     {
-      "key": "ODC/OSDC",
+      "key": "ODC / OSDC",
       "value": "odc/osdc"
     }
   ],
@@ -638,5 +638,43 @@
       "key": "Viettel Timor Unipessoal LDA",
       "value": "KH0063"
     }
+  ],
+  "type": [
+    {"key": "ngày", "value": 1},
+    {"key": "DAY", "value": 1},
+    {"key": "tuần", "value": 2},
+    {"key": "WEEK", "value": 2},
+    {"key": "tháng", "value": 3},
+    {"key": "T*/yyyy hoặc Tháng N/YYYY", "value": 3},
+    {"key": "MONTH", "value": 3},
+    {"key": "khoảng nhiều tháng (Tx/yyyy - Ty/yyyy)", "value": 3},
+    {"key": "quý", "value": 4},
+    {"key": "Q*/yyyy hoặc Quý N/YYYY", "value": 4},
+    {"key": "QUARTER / QUATER", "value": 4},
+    {"key": "năm", "value": 5},
+    {"key": "YEAR", "value": 5},
+    {"key": "mặc định khi không rõ", "value": 3}
+  ],
+  "standardComparison": [
+    {"key": "trên ngưỡng / vượt ngưỡng / cao hơn ngưỡng", "value": 1},
+    {"key": "ABOVE", "value": 1},
+    {"key": "dưới ngưỡng / thấp hơn ngưỡng", "value": 2},
+    {"key": "BELOW", "value": 2}
+  ],
+  "sort": [
+    {"key": "tăng dần / ASC", "value": 1},
+    {"key": "giảm dần / DESC", "value": 2}
+  ],
+  "isCompany": [
+    {"key": "toàn công ty / cả công ty", "value": true},
+    {"key": "chỉ một đơn vị / phòng ban / trung tâm cụ thể", "value": false}
+  ],
+  "isAllProject": [
+    {"key": "tất cả dự án / toàn bộ dự án", "value": true},
+    {"key": "một dự án cụ thể", "value": false}
+  ],
+  "IsAllCustomer": [
+    {"key": "tất cả khách hàng / toàn bộ khách hàng", "value": true},
+    {"key": "khách hàng cụ thể", "value": false}
   ]
 }
