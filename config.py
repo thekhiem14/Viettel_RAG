@@ -65,12 +65,6 @@ LLM_MAX_NEW_TOKENS = 512
 LLM_THINKING_MODE  = False
 LLM_TEMPERATURE    = 0.0
 
-# --- Gemini ---
-GEMINI_API_KEY     = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL       = "gemini-1.5-flash"
-GEMINI_SLEEP       = 4.0
-GEMINI_MAX_RETRIES = 3
-
 # --- Eval ---
 EVAL_ACCURACY_THRESHOLD = 0.70
 TIME_RESPONSE_TARGET    = 15.0
