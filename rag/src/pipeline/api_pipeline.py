@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 import config
 from rag.src.llm.json_validator import validate_body_output
-from rag.src.llm.prompts import build_api_prompt
+from rag.src.llm.prompts import build_api_prompt, _load_aliases
 from rag.src.llm.qwen import generate
 from rag.src.retrieval.api_retriever import APIRetriever
 from shared.types import APIEntry, Question
@@ -19,6 +19,36 @@ logger = get_logger("api_pipeline", config.LOGS_DIR)
 
 _retriever: APIRetriever | None = None
 _schemas: dict[str, APIEntry] | None = None
+
+# Params cần lookup từ aliases thay vì để LLM đoán
+_LOOKUP_PARAMS = {"projectId", "projectList", "customerList"}
+
+
+def _prefill_from_aliases(question: str, candidate: APIEntry) -> dict:
+    """Scan câu hỏi để tìm project/customer names và map sang API values.
+
+    Chỉ xử lý params thuộc _LOOKUP_PARAMS có trong required+optional của candidate.
+    Trả về dict các key đã được pre-fill (có thể rỗng nếu không match).
+    """
+    aliases = _load_aliases()
+    all_params = candidate.required_params + candidate.optional_params
+    param_names = {p["name"] for p in all_params if "name" in p}
+    prefill: dict = {}
+
+    for param in _LOOKUP_PARAMS & param_names:
+        entries = aliases.get(param, [])
+        matched = []
+        for entry in entries:
+            key = str(entry.get("key", ""))
+            if key and key in question:
+                matched.append(entry["value"])
+        if matched:
+            # projectId là scalar (lấy first), projectList/customerList là list
+            if param == "projectId":
+                prefill[param] = matched[0]
+            else:
+                prefill[param] = matched
+    return prefill
 
 
 def _get_retriever() -> APIRetriever:
@@ -58,6 +88,7 @@ def run(question: Question) -> dict:
     print(f"[api] id={question.id}  retrieval={ms_ret}ms  candidates={len(candidates)}  top1={top1}")
 
     top1 = candidates[0]
+    prefill = _prefill_from_aliases(question.question, top1)
     if config.SKIP_LLM:
         body = top1.example_body or {}
         logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": top1.func_code})
@@ -69,6 +100,8 @@ def run(question: Question) -> dict:
         body = validate_body_output(raw_output)
         valid_keys = {p["name"] for p in top1.required_params + top1.optional_params if "name" in p}
         body = {k: v for k, v in body.items() if k in valid_keys}
+        # prefill overrides LLM output cho project/customer params
+        body.update(prefill)
         ms_llm = round((time.perf_counter() - t0) * 1000)
         logger.info("stage_llm", extra={"id": question.id, "func_code": top1.func_code, "ms": ms_llm})
         print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={top1.func_code}")
