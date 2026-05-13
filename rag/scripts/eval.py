@@ -158,6 +158,25 @@ def main() -> None:
     out_metrics = config.OUTPUTS_DIR / "eval" / "metrics.json"
     save_json(out_metrics, metrics)
 
+    # ── Save submission_eval.csv ─────────────────────────────────────────────
+    out_eval = config.OUTPUTS_DIR / "eval" / "submission_eval.csv"
+    with open(out_eval, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        writer.writerow(["id", "func_code", "raw_result", "func_param_formatted"])
+        for r in results:
+            func_code = r["function_code"]
+            raw = r["function_result"]
+            if func_code == "call_document":
+                letters = [c for c in raw.upper() if c in "ABCD"]
+                formatted = json.dumps({"numbers": len(letters), "result": ",".join(letters)}, ensure_ascii=False)
+            else:
+                try:
+                    obj = json.loads(raw)
+                    formatted = json.dumps({"path": obj.get("path", ""), "body": obj.get("body", {})}, ensure_ascii=False)
+                except Exception:
+                    formatted = raw
+            writer.writerow([r["id"], func_code, raw, formatted])
+
     # ── Print summary ────────────────────────────────────────────────────────
     print(f"\n[06_eval] DONE — {n} questions in {total_time:.1f}s")
     print(f"  Intent accuracy:      {metrics['intent_accuracy']:.1%}  ({intent_correct}/{n})")
@@ -169,6 +188,7 @@ def main() -> None:
     print(f"  Avg time_response:    {metrics['avg_time_response']:.2f}s  (target <{config.TIME_RESPONSE_TARGET}s)")
     print(f"  Saved -> {out_pred}")
     print(f"  Saved -> {out_metrics}")
+    print(f"  Saved -> {out_eval}")
 
     if metrics["intent_accuracy"] < 0.95:
         print(f"\n  !! Intent accuracy < 95% — check INTENT_COSINE_THRESHOLD (hiện: {config.INTENT_COSINE_THRESHOLD})")

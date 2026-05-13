@@ -64,6 +64,7 @@ def main() -> None:
     out_path = config.OUTPUTS_DIR / "submission" / "submission.csv"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
+    rows = []
     with open(out_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         writer.writerow(["id", "func_code", "func_param"])
@@ -75,6 +76,14 @@ def main() -> None:
             else:
                 func_param = _format_api(raw)
             writer.writerow([r["id"], func_code, func_param])
+            rows.append((r["id"], func_code, raw, func_param))
+
+    eval_path = config.OUTPUTS_DIR / "submission" / "submission_eval.csv"
+    with open(eval_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        writer.writerow(["id", "func_code", "raw_result", "func_param"])
+        for id_, fc, raw, fp in rows:
+            writer.writerow([id_, fc, raw, fp])
 
     print(f"\n[submission] DONE — {len(results)} câu trong {elapsed:.1f}s")
     print(f"  avg: {elapsed / len(results):.2f}s/câu")

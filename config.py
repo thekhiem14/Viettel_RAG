@@ -58,7 +58,7 @@ INTENT_COSINE_THRESHOLD = 0.55  # TODO: tune trên example_data 100 câu
 DOC_USE_FILTER = True  # False để tắt Public_XXX filter nếu đề bài cấm
 
 # --- Debug / eval ---
-SKIP_LLM = True  # True để bỏ qua LLM (retrieval-only eval, nhanh hơn)
+SKIP_LLM = False  # False để LLM điền body/path cho call_api
 
 # --- LLM ---
 LLM_MAX_NEW_TOKENS = 512

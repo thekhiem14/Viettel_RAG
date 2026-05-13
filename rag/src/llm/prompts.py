@@ -78,6 +78,14 @@ Hướng dẫn:
 - Chọn đúng 1 func_code trong danh sách: {func_codes}
 - Điền body từ thông tin trong câu hỏi (ngày tháng dùng format yyyy-mm-dd)
 - Nếu câu hỏi không đề cập đến một param nào đó, dùng [] cho List, null cho các kiểu khác
+- Quy đổi ngày từ câu hỏi:
+  "T8/2025" hoặc "tháng 8/2025" → fromDate: "2025-08-01", toDate: "2025-08-31"
+  "Q3/2025" hoặc "Quý 3/2025" → fromDate: "2025-07-01", toDate: "2025-09-30"
+  "Q1" → 01-03, "Q2" → 04-06, "Q3" → 07-09, "Q4" → 10-12
+  "năm 2025" → fromDate: "2025-01-01", toDate: "2025-12-31"
+  "T1/2025 -> T12/2025" → fromDate: "2025-01-01", toDate: "2025-12-31"
+- Tên đơn vị (TTPMTCS, TTPMVT...) → điền vào param "organization": ["TTPMTCS"]
+- Loại dự án (T&M, Package, OSDC, Presales) → "projectType": ["T&M"] (dùng đúng value trong valid values)
 - Chỉ trả về JSON, không giải thích thêm
 
 Trả về JSON theo format sau:
@@ -112,5 +120,5 @@ def build_doc_prompt(chunks: list[Chunk], question: str, options: dict[str, str]
 Câu hỏi: {question}
 {options_text}
 
-Chỉ trả lời bằng chữ cái đáp án, không giải thích, không suy nghĩ thêm. Có thể nhiều đáp án (ví dụ: AB).
+Chỉ trả lời bằng chữ cái đáp án, không giải thích, không suy nghĩ thêm. Có thể nhiều đáp án, mỗi đáp án cách nhau bằng dấu phẩy (ví dụ: A,B,C,D).
 Đáp án:"""

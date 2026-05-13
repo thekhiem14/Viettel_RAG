@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import sys
 import time
 from pathlib import Path
@@ -18,8 +17,6 @@ from shared.utils.logger import get_logger
 logger = get_logger("doc_pipeline", config.LOGS_DIR)
 
 _retriever: DocRetriever | None = None
-
-_ANSWER_RE = re.compile(r"\b([A-D]{1,4})\b")
 
 
 def _get_retriever() -> DocRetriever:
@@ -43,17 +40,23 @@ def _parse_note(note: str) -> dict[str, str]:
 
 
 def _extract_answer(raw: str) -> str:
-    """Extract đáp án từ raw LLM output. Trả về chuỗi chữ cái, vd 'A', 'AB'."""
-    # Tìm pattern "Đáp án: X" hoặc "Answer: X" hoặc chữ cái cuối câu
-    # Ưu tiên pattern ở cuối output
+    """Extract đáp án từ raw LLM output. Trả về chuỗi kiểu 'A' hoặc 'A,B,C'.
+
+    LLM được yêu cầu trả về dạng "A" hoặc "A,B,C" → parse các chữ cái A-D,
+    loại bỏ khoảng trắng, giữ thứ tự xuất hiện, bỏ trùng.
+    """
+    # Lấy dòng cuối cùng không rỗng
     lines = [l.strip() for l in raw.strip().split("\n") if l.strip()]
-    for line in reversed(lines):
-        m = _ANSWER_RE.search(line)
-        if m:
-            return m.group(1)
-    # fallback: lấy match đầu tiên trong toàn bộ output
-    m = _ANSWER_RE.search(raw)
-    return m.group(1) if m else "A"
+    last_line = lines[-1] if lines else raw
+
+    # Tìm tất cả chữ cái A-D trong dòng cuối (giữ thứ tự, bỏ trùng)
+    letters = list(dict.fromkeys(c for c in last_line.upper() if c in "ABCD"))
+    if letters:
+        return ",".join(letters)
+
+    # Fallback: scan toàn bộ output
+    letters = list(dict.fromkeys(c for c in raw.upper() if c in "ABCD"))
+    return ",".join(letters) if letters else "A"
 
 
 def run(question: Question) -> dict:
