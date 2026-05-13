@@ -67,6 +67,8 @@ def run(question: Question) -> dict:
         prompt = build_api_prompt(question.question, top1)
         raw_output = generate(prompt)
         body = validate_body_output(raw_output)
+        valid_keys = {p["name"] for p in top1.required_params + top1.optional_params if "name" in p}
+        body = {k: v for k, v in body.items() if k in valid_keys}
         ms_llm = round((time.perf_counter() - t0) * 1000)
         logger.info("stage_llm", extra={"id": question.id, "func_code": top1.func_code, "ms": ms_llm})
         print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={top1.func_code}")
