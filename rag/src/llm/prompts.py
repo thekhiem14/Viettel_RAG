@@ -38,62 +38,35 @@ def _format_params(params: list[dict], aliases: dict[str, list[dict]]) -> str:
     return "\n".join(lines)
 
 
-def _format_api_entry(idx: int, entry: APIEntry, aliases: dict[str, list[dict]]) -> str:
-    required = _format_params(entry.required_params, aliases)
-    optional = _format_params(entry.optional_params, aliases)
-    return (
-        f"[{idx}] func_code: {entry.func_code}\n"
-        f"    Tên: {entry.name}\n"
-        f"    Mô tả: {entry.description}\n"
-        f"    Path: {entry.path}\n"
-        f"    Required params:\n{required}\n"
-        f"    Optional params:\n{optional}"
-    )
 
-
-def build_api_prompt(question: str, candidates: list[APIEntry]) -> str:
-    """Tạo prompt cho call_api: LLM chọn 1 trong top-5 candidates và điền params.
+def build_api_prompt(question: str, candidate: APIEntry) -> str:
+    """Tạo prompt cho call_api: LLM điền body cho top-1 candidate.
 
     Args:
         question: câu hỏi tiếng Việt của user
-        candidates: danh sách APIEntry (thường top-5 từ retriever)
+        candidate: top-1 APIEntry từ retriever
 
     Returns:
         Prompt string để pass vào qwen.generate()
     """
     aliases = _load_aliases()
-    api_blocks = "\n\n".join(
-        _format_api_entry(i + 1, entry, aliases) for i, entry in enumerate(candidates)
-    )
+    params_text = _format_params(candidate.required_params + candidate.optional_params, aliases)
+    example = json.dumps(candidate.example_body, ensure_ascii=False) if candidate.example_body else "{}"
 
-    func_codes = ", ".join(e.func_code for e in candidates)
+    return f"""Câu hỏi: {question}
 
-    return f"""Bạn là trợ lý AI chuyên về hệ thống quản lý dự án Viettel. Câu hỏi: {question}
-
-Dưới đây là {len(candidates)} API có thể phù hợp. Hãy chọn API đúng nhất và điền params từ câu hỏi:
-
-{api_blocks}
+API: {candidate.name}
+Params:
+{params_text}
+Example body: {example}
 
 Hướng dẫn:
-- Chọn đúng 1 func_code trong danh sách: {func_codes}
-- Điền body từ thông tin trong câu hỏi (ngày tháng dùng format yyyy-mm-dd)
-- Nếu câu hỏi không đề cập đến một param nào đó, dùng [] cho List, null cho các kiểu khác
-- Quy đổi ngày từ câu hỏi:
-  "T8/2025" hoặc "tháng 8/2025" → fromDate: "2025-08-01", toDate: "2025-08-31"
-  "Q3/2025" hoặc "Quý 3/2025" → fromDate: "2025-07-01", toDate: "2025-09-30"
-  "Q1" → 01-03, "Q2" → 04-06, "Q3" → 07-09, "Q4" → 10-12
-  "năm 2025" → fromDate: "2025-01-01", toDate: "2025-12-31"
-  "T1/2025 -> T12/2025" → fromDate: "2025-01-01", toDate: "2025-12-31"
-- Tên đơn vị (TTPMTCS, TTPMVT...) → điền vào param "organization": ["TTPMTCS"]
-- Loại dự án (T&M, Package, OSDC, Presales) → "projectType": ["T&M"] (dùng đúng value trong valid values)
-- Chỉ trả về JSON, không giải thích thêm
+- Điền body từ thông tin trong câu hỏi theo đúng format example body
+- Ngày tháng dùng format yyyy-mm-dd
+- Nếu không đề cập, dùng [] cho List, null cho các kiểu khác
+- Chỉ trả về JSON body, không giải thích
 
-Trả về JSON theo format sau:
-{{
-  "func_code": "<chọn 1 trong {len(candidates)} func_code ở trên>",
-  "path": "<path tương ứng với func_code đã chọn>",
-  "body": {{}}
-}}"""
+Body:"""
 
 
 def build_doc_prompt(chunks: list[Chunk], question: str, options: dict[str, str]) -> str:

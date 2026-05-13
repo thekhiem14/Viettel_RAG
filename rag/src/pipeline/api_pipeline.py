@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 import config
-from rag.src.llm.json_validator import validate_api_output
+from rag.src.llm.json_validator import validate_body_output
 from rag.src.llm.prompts import build_api_prompt
 from rag.src.llm.qwen import generate
 from rag.src.retrieval.api_retriever import APIRetriever
@@ -57,19 +57,20 @@ def run(question: Question) -> dict:
     logger.info("stage_retrieval", extra={"id": question.id, "n_candidates": len(candidates), "top1": top1, "ms": ms_ret})
     print(f"[api] id={question.id}  retrieval={ms_ret}ms  candidates={len(candidates)}  top1={top1}")
 
+    top1 = candidates[0]
     if config.SKIP_LLM:
-        top1 = candidates[0]
-        result = {"func_code": top1.func_code, "path": top1.path, "body": top1.example_body or {}}
-        logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": result["func_code"]})
-        print(f"[api] id={question.id}  llm=SKIPPED  func_code={result['func_code']}")
+        body = top1.example_body or {}
+        logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": top1.func_code})
+        print(f"[api] id={question.id}  llm=SKIPPED  func_code={top1.func_code}")
     else:
         t0 = time.perf_counter()
-        prompt = build_api_prompt(question.question, candidates)
+        prompt = build_api_prompt(question.question, top1)
         raw_output = generate(prompt)
-        result = validate_api_output(raw_output, candidates)
+        body = validate_body_output(raw_output)
         ms_llm = round((time.perf_counter() - t0) * 1000)
-        logger.info("stage_llm", extra={"id": question.id, "func_code": result.get("func_code"), "ms": ms_llm})
-        print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={result.get('func_code')}")
+        logger.info("stage_llm", extra={"id": question.id, "func_code": top1.func_code, "ms": ms_llm})
+        print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={top1.func_code}")
+    result = {"func_code": top1.func_code, "path": top1.path, "body": body}
 
     time_response = round(time.perf_counter() - t_start, 3)
     print(f"[api] id={question.id}  body={result.get('body')}")
