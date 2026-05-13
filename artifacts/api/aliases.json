@@ -341,6 +341,34 @@
     {
       "key": "Trung tâm công nghệ",
       "value": "TTCN"
+    },
+    {
+      "key": "TTPMQT",
+      "value": "TTPMQT"
+    },
+    {
+      "key": "TTPMVT",
+      "value": "TTPMVT"
+    },
+    {
+      "key": "TTPMTCS",
+      "value": "TTPMTCS"
+    },
+    {
+      "key": "TTPMCNM",
+      "value": "TTPMCNM"
+    },
+    {
+      "key": "TTPMCDS",
+      "value": "TTPMCDS"
+    },
+    {
+      "key": "TTCNDT",
+      "value": "TTCNDT"
+    },
+    {
+      "key": "TTCN",
+      "value": "TTCN"
     }
   ],
   "projectStatus": [
@@ -363,6 +391,26 @@
     {
       "key": "Tạm dừng / hold",
       "value": "hold"
+    },
+    {
+      "key": "in-progress",
+      "value": "in-progress"
+    },
+    {
+      "key": "hold",
+      "value": "hold"
+    },
+    {
+      "key": "closed",
+      "value": "closed"
+    },
+    {
+      "key": "presale",
+      "value": "presale"
+    },
+    {
+      "key": "open",
+      "value": "open"
     }
   ],
   "projectType": [
@@ -380,6 +428,42 @@
     },
     {
       "key": "ODC / OSDC",
+      "value": "odc/osdc"
+    },
+    {
+      "key": "T&M",
+      "value": "T&M"
+    },
+    {
+      "key": "presales",
+      "value": "presales"
+    },
+    {
+      "key": "presale",
+      "value": "presales"
+    },
+    {
+      "key": "package",
+      "value": "package"
+    },
+    {
+      "key": "odc/osdc",
+      "value": "odc/osdc"
+    },
+    {
+      "key": "osdc",
+      "value": "odc/osdc"
+    },
+    {
+      "key": "odc",
+      "value": "odc/osdc"
+    },
+    {
+      "key": "OSDC",
+      "value": "odc/osdc"
+    },
+    {
+      "key": "ODC",
       "value": "odc/osdc"
     }
   ],

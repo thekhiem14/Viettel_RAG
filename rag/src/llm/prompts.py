@@ -23,22 +23,29 @@ def _load_aliases() -> dict[str, list[dict]]:
     return _aliases
 
 
-def _format_params(params: list[dict], aliases: dict[str, list[dict]]) -> str:
+_LOOKUP_PARAMS = {"projectId", "projectList", "customerList"}
+
+
+def _format_params(params: list[dict], aliases: dict[str, list[dict]], question: str = "") -> str:
     if not params:
         return "  (none)"
     lines = []
     for p in params:
         name = p["name"]
         desc = p.get("description", "")
-        enum_values = aliases.get(name)
-        if enum_values:
+        entries = aliases.get(name, [])
+        if entries:
+            # Lookup params: chỉ inject entries khớp câu hỏi thay vì toàn bộ
+            if name in _LOOKUP_PARAMS and question:
+                entries = [e for e in entries if str(e.get("key", "")) in question]
             seen: list[str] = []
-            for v in enum_values:
+            for v in entries:
                 val = str(v.get("value", v.get("key", "")))
                 if val and val not in seen:
                     seen.append(val)
-            valid = ", ".join(seen)
-            desc = f"{desc} [valid values: {valid}]" if desc else f"[valid values: {valid}]"
+            if seen:
+                valid = ", ".join(seen)
+                desc = f"{desc} [valid values: {valid}]" if desc else f"[valid values: {valid}]"
         lines.append(f"  - {name} ({p['type']}): {desc}")
     return "\n".join(lines)
 
@@ -55,8 +62,8 @@ def build_api_prompt(question: str, candidate: APIEntry) -> str:
         Prompt string để pass vào qwen.generate()
     """
     aliases = _load_aliases()
-    required_text = _format_params(candidate.required_params, aliases)
-    optional_text = _format_params(candidate.optional_params, aliases)
+    required_text = _format_params(candidate.required_params, aliases, question)
+    optional_text = _format_params(candidate.optional_params, aliases, question)
 
     return f"""Bạn là API body generator. Sinh body JSON cho API dưới đây dựa vào câu hỏi tiếng Việt.
 
@@ -80,8 +87,6 @@ Ghi chú quan trọng:
 - Param `type`: ngày=1, tuần=2, tháng=3, quý=4, năm=5. Khi câu hỏi đề cập khoảng nhiều tháng/không rõ → 3.
 - Param `standardComparison`: trên/vượt ngưỡng=1, dưới ngưỡng=2.
 - Param `sort`: tăng dần=1, giảm dần=2.
-- Enum `projectType`: chỉ dùng đúng chữ "T&M", "presales", "odc/osdc", "package".
-- Enum `projectStatus`: chỉ dùng đúng chữ "in-progress", "hold", "closed", "presale", "open".
 - KHÔNG thêm key nào ngoài danh sách required + optional ở trên.
 - KHÔNG giải thích, chỉ trả về 1 JSON body hợp lệ.
 
