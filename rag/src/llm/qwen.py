@@ -19,13 +19,13 @@ def _load() -> None:
     from vllm import LLM, SamplingParams
     from transformers import AutoTokenizer
     os.environ["VLLM_ATTENTION_BACKEND"] = "XFORMERS"
-    
+
     _llm = LLM(
         model=config.LLM_MODEL,
         quantization=config.LLM_QUANTIZATION,
         dtype="float16",
         gpu_memory_utilization=0.55,
-        max_model_len=1024,
+        max_model_len=2048,
         max_num_seqs=1,
         tensor_parallel_size=1,
         enforce_eager=True,
