@@ -117,5 +117,5 @@ def build_doc_prompt(chunks: list[Chunk], question: str, options: dict[str, str]
 Câu hỏi: {question}
 {options_text}
 
-Chỉ trả lời bằng chữ cái đáp án, không giải thích, không suy nghĩ thêm. Có thể nhiều đáp án, mỗi đáp án cách nhau bằng dấu phẩy (ví dụ: A,B,C,D).
+Chỉ trả lời bằng chữ cái đáp án, không giải thích, không suy nghĩ thêm. Chỉ chọn duy nhất 1 đáp án.
 Đáp án:"""
