@@ -36,8 +36,8 @@ CLASSIFIER  = ARTIFACTS_DIR / "classifier" / "intent.pkl"
 # --- Models ---
 EMBED_MODEL      = "BAAI/bge-m3"
 RERANK_MODEL     = "BAAI/bge-reranker-v2-m3"
-LLM_MODEL        = "Qwen/Qwen2.5-3B-Instruct-AWQ"  # vLLM AWQ 4-bit, ~2.5GB VRAM (T4-friendly cho v2)
-LLM_QUANTIZATION = "awq"
+LLM_MODEL        = "Qwen/Qwen3-4B"
+LLM_QUANTIZATION = "4bit"
 
 # --- Chunking ---
 CHUNK_MIN_CHARS = 80
@@ -49,10 +49,10 @@ BM25_TOP_K         = 20
 FAISS_TOP_K        = 20
 RRF_K              = 60
 RERANK_TOP_K       = 5
-API_RETRIEVE_TOP_K = 5   # TODO: test top_k=10 — nếu latency cho phép thì tăng
+API_RETRIEVE_TOP_K = 5
 
 # --- Intent (cosine vs API embeddings) ---
-INTENT_COSINE_THRESHOLD = 0.55  # TODO: tune trên example_data 100 câu
+INTENT_COSINE_THRESHOLD = 0.55
 
 # --- Doc retrieval filter ---
 DOC_USE_FILTER = True  # False để tắt Public_XXX filter nếu đề bài cấm

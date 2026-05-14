@@ -9,63 +9,64 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 from shared.types import APIEntry
 
 
-def _format_missing_params(
-    candidate: APIEntry, missing_keys: list[str]
-) -> str:
-    """Liệt kê CHỈ các param còn thiếu, kèm type + description."""
-    all_params = {p["name"]: p for p in candidate.required_params + candidate.optional_params if "name" in p}
+def _format_params(params: list[dict]) -> str:
+    if not params:
+        return "  (none)"
     lines = []
-    for k in missing_keys:
-        p = all_params.get(k)
-        if not p:
-            lines.append(f"  - {k} (unknown type)")
-            continue
+    for p in params:
+        name = p.get("name", "")
+        ptype = p.get("type", "?")
         desc = p.get("description", "")
-        lines.append(f"  - {k} ({p.get('type', '?')}): {desc}")
-    return "\n".join(lines) if lines else "  (none)"
+        lines.append(f"  - {name} ({ptype}): {desc}")
+    return "\n".join(lines)
 
 
 def build_api_prompt_v2(
     question: str,
     candidate: APIEntry,
-    body_draft: dict,
-    missing_keys: list[str],
+    pre_filled: dict,
 ) -> str:
-    """Prompt v2: LLM CHỈ điền các key còn thiếu, không sửa body_draft.
+    """Prompt v2: LLM fill toàn bộ body dựa vào schema description.
 
     Args:
-        question: câu hỏi gốc tiếng Việt
-        candidate: top-1 APIEntry
-        body_draft: body đã build bằng rule-based (đa số đã đúng)
-        missing_keys: danh sách key cần LLM điền
+        question:    câu hỏi gốc tiếng Việt
+        candidate:   top-1 APIEntry (có đầy đủ required/optional params + description)
+        pre_filled:  dict các giá trị đã extract bằng rule-based
+                     (fromDate, toDate, organization, projectList, ...)
+                     LLM KHÔNG được sửa các key này.
 
     Returns:
-        Prompt string. Output mong đợi: JSON CHỈ chứa các missing_keys.
+        Prompt string. Output mong đợi: JSON body hoàn chỉnh đúng schema.
     """
-    missing_text = _format_missing_params(candidate, missing_keys)
-    draft_json = json.dumps(body_draft, ensure_ascii=False, indent=2)
+    required_text = _format_params(candidate.required_params)
+    optional_text = _format_params(candidate.optional_params)
+    pre_filled_json = json.dumps(pre_filled, ensure_ascii=False, indent=2)
 
-    return f"""Bạn là API body completer. Body JSON đã được build sẵn từ rule-based extraction.
-Nhiệm vụ: CHỈ điền giá trị cho các key còn thiếu, KHÔNG sửa các key đã có.
+    # Liệt kê tên tất cả key để LLM biết phải có đủ
+    all_keys = [p["name"] for p in (candidate.required_params or []) + (candidate.optional_params or []) if "name" in p]
+    keys_list = ", ".join(all_keys)
+
+    return f"""Bạn là API body generator. Hãy sinh JSON body cho API dưới đây dựa vào câu hỏi tiếng Việt.
 
 Câu hỏi: {question}
 
 API: {candidate.name}
-Description: {candidate.description}
+Mô tả: {candidate.description}
 
-Body đã có sẵn (KHÔNG sửa):
-{draft_json}
+REQUIRED params (bắt buộc phải có):
+{required_text}
 
-Các key CẦN ĐIỀN (chỉ trả về JSON chứa đúng các key này):
-{missing_text}
+OPTIONAL params (phải có trong body, dùng giá trị mặc định nếu câu hỏi không đề cập):
+{optional_text}
 
-Quy tắc:
-- Ngày tháng dạng yyyy-mm-dd.
-- Param `type`: ngày=1, tuần=2, tháng=3, quý=4, năm=5.
-- Param `sort`: tăng dần=1, giảm dần=2.
-- Param `standardComparison`: trên/vượt ngưỡng=1, dưới ngưỡng=2.
-- List rỗng = [], string rỗng = "", không biết = null.
-- KHÔNG thêm key ngoài danh sách trên.
-- KHÔNG giải thích, CHỈ trả về 1 JSON hợp lệ chứa các key cần điền.
+Các giá trị đã được extract sẵn (KHÔNG thay đổi):
+{pre_filled_json}
 
-JSON:"""
+Yêu cầu:
+1. Trả về JSON body chứa ĐỦ tất cả các key: {keys_list}
+2. Với mỗi param, đọc kỹ description để chọn giá trị đúng.
+3. Nếu câu hỏi KHÔNG đề cập đến một optional param → dùng giá trị mặc định theo description (thường là [] cho List, null cho Integer/Boolean).
+4. Không thêm key ngoài danh sách trên.
+5. Không giải thích, chỉ trả về 1 JSON hợp lệ.
+
+Body JSON:"""
