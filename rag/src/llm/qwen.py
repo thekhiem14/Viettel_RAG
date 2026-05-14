@@ -25,11 +25,12 @@ def _load() -> None:
         model=config.LLM_MODEL,
         quantization=config.LLM_QUANTIZATION,
         dtype="float16",
-        gpu_memory_utilization=0.85,
+        gpu_memory_utilization=0.55,  # T4 15GB: ~8.25GB cho LLM, còn lại cho embed+rerank
         max_model_len=1024,
         max_num_seqs=1,
         tensor_parallel_size=1,
         enforce_eager=True,  # T4 không support FlashAttention tốt
+        swap_space=0,        # tắt CPU swap để tránh OOM khi prefill
         trust_remote_code=True,
     )
     _tokenizer = AutoTokenizer.from_pretrained(config.LLM_MODEL)
