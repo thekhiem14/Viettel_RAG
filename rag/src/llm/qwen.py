@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -18,13 +19,16 @@ def _load() -> None:
         return
     from vllm import LLM, SamplingParams
     from transformers import AutoTokenizer
+    os.environ["VLLM_ATTENTION_BACKEND"] = "XFORMERS"  # T4 không support FlashAttn
 
     _llm = LLM(
         model=config.LLM_MODEL,
         quantization=config.LLM_QUANTIZATION,
         dtype="float16",
         gpu_memory_utilization=0.85,
-        max_model_len=4096,
+        max_model_len=1024,
+        max_num_seqs=1,
+        tensor_parallel_size=1,
         enforce_eager=True,  # T4 không support FlashAttention tốt
         trust_remote_code=True,
     )
