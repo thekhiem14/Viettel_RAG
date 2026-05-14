@@ -146,6 +146,7 @@ def run(question: Question) -> dict:
     print(f"[api_v2] id={question.id}  extract={ms_ext}ms  pre_filled={list(pre_filled.keys())}")
 
     # S3: LLM fill full body
+    raw_llm = ""
     if config.SKIP_LLM:
         body = _build_fallback_body(top1, pre_filled)
         print(f"[api_v2] id={question.id}  llm=SKIPPED (SKIP_LLM)")
@@ -156,6 +157,7 @@ def run(question: Question) -> dict:
         for attempt in range(2):
             try:
                 raw = generate(prompt)
+                raw_llm = raw
                 llm_body = validate_body_output(raw)
                 if llm_body:
                     llm_ok = True
@@ -187,5 +189,6 @@ def run(question: Question) -> dict:
         "id": question.id,
         "function_code": "call_api",
         "function_result": json.dumps(result, ensure_ascii=False, indent=2),
+        "raw_llm": raw_llm,
         "time_response": time_response,
     }

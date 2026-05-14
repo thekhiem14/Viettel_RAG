@@ -100,10 +100,12 @@ def run_one(question: Question) -> dict:
             return api_pipeline.run(question)
     except Exception as e:
         logger.error("pipeline_error", extra={"id": question.id, "error": str(e)})
+        fallback = "A" if label == "call_document" else ""
         return {
             "id": question.id,
             "function_code": label,
-            "function_result": "",
+            "function_result": fallback,
+            "raw_llm": "",
             "time_response": 0.0,
         }
 

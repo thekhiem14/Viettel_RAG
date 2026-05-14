@@ -58,6 +58,7 @@ def run(question: Question) -> dict:
     print(f"[api] id={question.id}  retrieval={ms_ret}ms  candidates={len(candidates)}  top1={top1}")
 
     top1 = candidates[0]
+    raw_output = ""
     if config.SKIP_LLM:
         body = top1.example_body or {}
         logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": top1.func_code})
@@ -81,5 +82,6 @@ def run(question: Question) -> dict:
         "id": question.id,
         "function_code": "call_api",
         "function_result": json.dumps(result, ensure_ascii=False),
+        "raw_llm": raw_output,
         "time_response": time_response,
     }

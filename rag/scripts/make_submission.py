@@ -67,7 +67,7 @@ def main() -> None:
     rows = []
     with open(out_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        writer.writerow(["id", "func_code", "func_param"])
+        writer.writerow(["id", "func_code", "func_param", "time"])
         for r in results:
             func_code = r["function_code"]
             raw = r["function_result"]
@@ -75,15 +75,15 @@ def main() -> None:
                 func_param = _format_doc(raw)
             else:
                 func_param = _format_api(raw)
-            writer.writerow([r["id"], func_code, func_param])
-            rows.append((r["id"], func_code, raw, func_param))
+            writer.writerow([r["id"], func_code, func_param, r["time_response"]])
+            rows.append((r["id"], func_code, raw, func_param, r["time_response"]))
 
     eval_path = config.OUTPUTS_DIR / "submission" / "submission_eval.csv"
     with open(eval_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        writer.writerow(["id", "func_code", "raw_result", "func_param"])
-        for id_, fc, raw, fp in rows:
-            writer.writerow([id_, fc, raw, fp])
+        writer.writerow(["id", "func_code", "raw_result", "func_param", "time"])
+        for id_, fc, raw, fp, t in rows:
+            writer.writerow([id_, fc, raw, fp, t])
 
     print(f"\n[submission] DONE — {len(results)} câu trong {elapsed:.1f}s")
     print(f"  avg: {elapsed / len(results):.2f}s/câu")

@@ -89,5 +89,6 @@ def run(question: Question) -> dict:
         "id": question.id,
         "function_code": "call_document",
         "function_result": answer,
+        "raw_llm": raw_output,
         "time_response": time_response,
     }

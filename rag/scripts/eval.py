@@ -162,7 +162,7 @@ def main() -> None:
     out_eval = config.OUTPUTS_DIR / "eval" / "submission_eval.csv"
     with open(out_eval, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        writer.writerow(["id", "func_code", "raw_result", "func_param_formatted"])
+        writer.writerow(["id", "func_code", "raw_result", "func_param_formatted", "time"])
         for r in results:
             func_code = r["function_code"]
             raw = r["function_result"]
@@ -175,7 +175,7 @@ def main() -> None:
                     formatted = json.dumps({"path": obj.get("path", ""), "body": obj.get("body", {})}, ensure_ascii=False)
                 except Exception:
                     formatted = raw
-            writer.writerow([r["id"], func_code, raw, formatted])
+            writer.writerow([r["id"], func_code, raw, formatted, r["time_response"]])
 
     # ── Print summary ────────────────────────────────────────────────────────
     print(f"\n[06_eval] DONE — {n} questions in {total_time:.1f}s")
