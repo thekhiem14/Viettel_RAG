@@ -36,7 +36,7 @@ CLASSIFIER  = ARTIFACTS_DIR / "classifier" / "intent.pkl"
 # --- Models ---
 EMBED_MODEL      = "BAAI/bge-m3"
 RERANK_MODEL     = "BAAI/bge-reranker-v2-m3"
-LLM_MODEL        = "Qwen/Qwen2.5-7B-Instruct-AWQ"  # vLLM AWQ 4-bit, ~5GB VRAM
+LLM_MODEL        = "Qwen/Qwen2.5-3B-Instruct-AWQ"  # vLLM AWQ 4-bit, ~2.5GB VRAM (T4-friendly cho v2)
 LLM_QUANTIZATION = "awq"
 
 # --- Chunking ---
