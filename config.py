@@ -60,6 +60,9 @@ DOC_USE_FILTER = True  # False để tắt Public_XXX filter nếu đề bài c�
 # --- Debug / eval ---
 SKIP_LLM = False  # False để LLM điền body/path cho call_api
 
+# --- API pipeline version ---
+USE_API_V2 = True  # True → dùng api_pipeline_v2 (rule-based extract + LLM refine)
+
 # --- LLM ---
 LLM_MAX_NEW_TOKENS = 512
 LLM_THINKING_MODE  = False
