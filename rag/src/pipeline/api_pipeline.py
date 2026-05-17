@@ -58,21 +58,15 @@ def run(question: Question) -> dict:
     print(f"[api] id={question.id}  retrieval={ms_ret}ms  candidates={len(candidates)}  top1={top1}")
 
     top1 = candidates[0]
-    raw_output = ""
-    if config.SKIP_LLM:
-        body = top1.example_body or {}
-        logger.info("stage_llm_skipped", extra={"id": question.id, "func_code": top1.func_code})
-        print(f"[api] id={question.id}  llm=SKIPPED  func_code={top1.func_code}")
-    else:
-        t0 = time.perf_counter()
-        prompt = build_api_prompt(question.question, top1)
-        raw_output = generate(prompt)
-        body = validate_body_output(raw_output)
-        valid_keys = {p["name"] for p in top1.required_params + top1.optional_params if "name" in p}
-        body = {k: v for k, v in body.items() if k in valid_keys}
-        ms_llm = round((time.perf_counter() - t0) * 1000)
-        logger.info("stage_llm", extra={"id": question.id, "func_code": top1.func_code, "ms": ms_llm})
-        print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={top1.func_code}")
+    t0 = time.perf_counter()
+    prompt = build_api_prompt(question.question, top1)
+    raw_output = generate(prompt)
+    body = validate_body_output(raw_output)
+    valid_keys = {p["name"] for p in top1.required_params + top1.optional_params if "name" in p}
+    body = {k: v for k, v in body.items() if k in valid_keys}
+    ms_llm = round((time.perf_counter() - t0) * 1000)
+    logger.info("stage_llm", extra={"id": question.id, "func_code": top1.func_code, "ms": ms_llm})
+    print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={top1.func_code}")
     result = {"func_code": top1.func_code, "path": top1.path, "body": body}
 
     time_response = round(time.perf_counter() - t_start, 3)

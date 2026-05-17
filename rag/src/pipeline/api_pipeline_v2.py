@@ -147,35 +147,31 @@ def run(question: Question) -> dict:
 
     # S3: LLM fill full body
     raw_llm = ""
-    if config.SKIP_LLM:
-        body = _build_fallback_body(top1, pre_filled)
-        print(f"[api_v2] id={question.id}  llm=SKIPPED (SKIP_LLM)")
-    else:
-        t0 = time.perf_counter()
-        prompt = build_api_prompt_v2(question.question, top1, pre_filled)
-        llm_ok = False
-        for attempt in range(2):
-            try:
-                raw = generate(prompt)
-                raw_llm = raw
-                llm_body = validate_body_output(raw)
-                if llm_body:
-                    llm_ok = True
-                    break
-            except Exception as e:
-                logger.warning("llm_attempt_failed", extra={"id": question.id, "attempt": attempt, "error": str(e)})
-        ms_llm = round((time.perf_counter() - t0) * 1000)
+    t0 = time.perf_counter()
+    prompt = build_api_prompt_v2(question.question, top1, pre_filled)
+    llm_ok = False
+    for attempt in range(2):
+        try:
+            raw = generate(prompt)
+            raw_llm = raw
+            llm_body = validate_body_output(raw)
+            if llm_body:
+                llm_ok = True
+                break
+        except Exception as e:
+            logger.warning("llm_attempt_failed", extra={"id": question.id, "attempt": attempt, "error": str(e)})
+    ms_llm = round((time.perf_counter() - t0) * 1000)
 
-        if llm_ok:
-            # Override pre_filled vào body LLM (rule-based chắc chắn hơn LLM cho date/org)
-            for k, v in pre_filled.items():
-                llm_body[k] = v
-            body = llm_body
-            print(f"[api_v2] id={question.id}  llm={ms_llm}ms  keys={list(body.keys())}")
-        else:
-            body = _build_fallback_body(top1, pre_filled)
-            logger.warning("llm_failed_use_fallback", extra={"id": question.id})
-            print(f"[api_v2] id={question.id}  llm=FAILED → fallback body")
+    if llm_ok:
+        # Override pre_filled vào body LLM (rule-based chắc chắn hơn LLM cho date/org)
+        for k, v in pre_filled.items():
+            llm_body[k] = v
+        body = llm_body
+        print(f"[api_v2] id={question.id}  llm={ms_llm}ms  keys={list(body.keys())}")
+    else:
+        body = _build_fallback_body(top1, pre_filled)
+        logger.warning("llm_failed_use_fallback", extra={"id": question.id})
+        print(f"[api_v2] id={question.id}  llm=FAILED → fallback body")
 
     # S4: Coerce + order
     body = _coerce_and_order(body, top1)
