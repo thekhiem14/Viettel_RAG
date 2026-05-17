@@ -31,14 +31,11 @@ def _format_doc(answer: str) -> str:
     )
 
 
-def _format_api(raw: str) -> str:
-    """Lấy path + body từ JSON string của api_pipeline, bỏ func_code."""
+def _format_api(raw: str, path: str = "") -> str:
+    """Wrap body JSON + path thành func_param."""
     try:
-        obj = json.loads(raw)
-        return json.dumps(
-            {"path": obj.get("path", ""), "body": obj.get("body", {})},
-            ensure_ascii=False,
-        )
+        body = json.loads(raw)
+        return json.dumps({"path": path, "body": body}, ensure_ascii=False)
     except (json.JSONDecodeError, AttributeError):
         return raw
 
@@ -74,7 +71,7 @@ def main() -> None:
             if func_code == "call_document":
                 func_param = _format_doc(raw)
             else:
-                func_param = _format_api(raw)
+                func_param = _format_api(raw, path=r.get("api_path", ""))
             writer.writerow([r["id"], func_code, func_param, r["time_response"]])
             rows.append((r["id"], func_code, raw, func_param, r["time_response"]))
 

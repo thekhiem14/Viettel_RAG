@@ -63,10 +63,13 @@ Các giá trị đã được extract sẵn (KHÔNG thay đổi):
 {pre_filled_json}
 
 Yêu cầu:
-1. Trả về JSON body chứa ĐỦ tất cả các key: {keys_list}
-2. Với mỗi param, đọc kỹ description để chọn giá trị đúng.
-3. Nếu câu hỏi KHÔNG đề cập đến một optional param → dùng giá trị mặc định theo description (thường là [] cho List, null cho Integer/Boolean).
-4. Không thêm key ngoài danh sách trên.
-5. Không giải thích, chỉ trả về 1 JSON hợp lệ.
+1. Chỉ trả về nội dung bên trong body — tức là object JSON với các key: {keys_list}
+2. KHÔNG wrap thêm {{"path": ..., "body": ...}} bên ngoài.
+3. Với mỗi param, đọc kỹ description để chọn giá trị đúng.
+4. Nếu câu hỏi KHÔNG đề cập đến một optional param → dùng giá trị mặc định theo description (thường là [] cho List, null cho Integer/Boolean).
+5. Không thêm key ngoài danh sách trên.
+6. Không giải thích, chỉ trả về 1 JSON object hợp lệ.
 
-Body JSON:"""
+Ví dụ output đúng: {{"key1": "value1", "key2": []}}
+
+Body:"""

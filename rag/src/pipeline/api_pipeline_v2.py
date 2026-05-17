@@ -180,7 +180,6 @@ def run(question: Question) -> dict:
     # S4: Coerce + order
     body = _coerce_and_order(body, top1)
 
-    result = {"path": top1.path, "body": body}
     time_response = round(time.perf_counter() - t_start, 3)
     print(f"[api_v2] id={question.id}  TOTAL={time_response:.2f}s")
     print(f"[api_v2] id={question.id}  body={json.dumps(body, ensure_ascii=False)}")
@@ -188,7 +187,8 @@ def run(question: Question) -> dict:
     return {
         "id": question.id,
         "function_code": "call_api",
-        "function_result": json.dumps(result, ensure_ascii=False, indent=2),
+        "function_result": json.dumps(body, ensure_ascii=False),
+        "api_path": top1.path,
         "raw_llm": raw_llm,
         "time_response": time_response,
     }

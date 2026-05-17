@@ -165,16 +165,17 @@ def main() -> None:
         writer.writerow(["id", "func_code", "raw_result", "func_param_formatted", "time"])
         for r in results:
             func_code = r["function_code"]
-            raw = r["function_result"]
+            processed = r["function_result"]
+            raw = r.get("raw_llm", "")
             if func_code == "call_document":
-                letters = [c for c in raw.upper() if c in "ABCD"]
+                letters = [c for c in processed.upper() if c in "ABCD"]
                 formatted = json.dumps({"numbers": len(letters), "result": ",".join(letters)}, ensure_ascii=False)
             else:
                 try:
-                    obj = json.loads(raw)
+                    obj = json.loads(processed)
                     formatted = json.dumps({"path": obj.get("path", ""), "body": obj.get("body", {})}, ensure_ascii=False)
                 except Exception:
-                    formatted = raw
+                    formatted = processed
             writer.writerow([r["id"], func_code, raw, formatted, r["time_response"]])
 
     # ── Print summary ────────────────────────────────────────────────────────
