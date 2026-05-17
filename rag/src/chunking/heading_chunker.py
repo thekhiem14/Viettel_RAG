@@ -32,14 +32,24 @@ def _split_long_text(text: str, chunk_id_base: str, heading_path: str, level: in
     start = 0
     idx = 0
 
+    min_cut = int(max_c * 0.8)  # chỉ cắt sớm nếu đoạn đã đủ 80% window
+
     while start < len(text):
         end = start + max_c
         if end < len(text):
-            # Tìm newline để cắt đẹp, nhưng chỉ chấp nhận nếu sau start + overlap
-            # (tránh end quá gần start → start mới lùi lại → loop vô hạn)
-            newline = text.rfind("\n", start + overlap, end)
-            if newline > start + overlap:
+            # Ưu tiên 1: cắt tại newline cuối trong 20% cuối của window
+            newline = text.rfind("\n", start + min_cut, end)
+            if newline > start + min_cut:
                 end = newline
+            else:
+                # Ưu tiên 2: cắt tại word boundary (space/newline) gần end nhất,
+                # nhưng vẫn phải sau min_cut
+                space = max(
+                    text.rfind(" ", start + min_cut, end),
+                    text.rfind("\n", start + min_cut, end),
+                )
+                if space > start + min_cut:
+                    end = space
         seg = text[start:end].strip()
         if seg:
             doc_id = "_".join(chunk_id_base.split("_")[:2])

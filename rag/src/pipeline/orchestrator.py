@@ -65,14 +65,14 @@ def warmup() -> None:
         print(f"{time.perf_counter() - t:.2f}s")
     _stage("3. Reranker (bge-reranker-v2-m3)", _w_reranker)
 
-    # 4. LLM (Qwen3-4B 4-bit) — chậm nhất, ~10-30s lần đầu
+    # 4. LLM (2.5-3B 4-bit) — chậm nhất, ~10-30s lần đầu
     def _w_llm() -> None:
         from rag.src.llm.qwen import generate
         print(f"  [4a] generate() load model + tokenizer... ", end="", flush=True)
         t = time.perf_counter()
         output = generate("Trả lời 'A':")
         print(f"{time.perf_counter() - t:.2f}s (output: {len(output)} chars)")
-    _stage("4. LLM (Qwen3-4B 4-bit)", _w_llm)
+    _stage("4. LLM (Qwen2.5-3B 4-bit)", _w_llm)
 
     # 5. Intent classifier — wrapper quanh Embedder + FaissStore (đã warm ở #1+#2)
     def _w_intent() -> None:
@@ -88,16 +88,20 @@ def warmup() -> None:
 
 def run_one(question: Question) -> dict:
     """Route 1 câu hỏi → đúng pipeline → output dict."""
+    t_start = time.perf_counter()
     label, confidence = predict(question)
     logger.info("intent", extra={"id": question.id, "label": label, "confidence": confidence})
 
     try:
         if label == "call_document":
-            return doc_pipeline.run(question)
+            result = doc_pipeline.run(question)
         else:
             if getattr(config, "USE_API_V2", False):
-                return api_pipeline_v2.run(question)
-            return api_pipeline.run(question)
+                result = api_pipeline_v2.run(question)
+            else:
+                result = api_pipeline.run(question)
+        result["time_response"] = round(time.perf_counter() - t_start, 3)
+        return result
     except Exception as e:
         logger.error("pipeline_error", extra={"id": question.id, "error": str(e)})
         fallback = "A" if label == "call_document" else ""
@@ -106,7 +110,7 @@ def run_one(question: Question) -> dict:
             "function_code": label,
             "function_result": fallback,
             "raw_llm": "",
-            "time_response": 0.0,
+            "time_response": round(time.perf_counter() - t_start, 3),
         }
 
 

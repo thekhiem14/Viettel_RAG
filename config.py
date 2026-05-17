@@ -40,7 +40,7 @@ LLM_MODEL        = "Qwen/Qwen2.5-3B-Instruct-AWQ"  # vLLM AWQ 4-bit, ~2.5GB VRAM
 LLM_QUANTIZATION = "awq"
 
 # --- Chunking ---
-CHUNK_MIN_CHARS = 80
+CHUNK_MIN_CHARS = 20
 CHUNK_MAX_CHARS = 600
 CHUNK_OVERLAP   = 80
 

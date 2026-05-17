@@ -748,7 +748,10 @@
       "projectStatus": [
         "in-progress"
       ],
-      "projectList": []
+      "isAllProject": true,
+      "projectList": [],
+      "isAllCustomer": true,
+      "customerList": []
     }
   },
   "get_projects_with_cumulative_ra_over_budget_by_unit": {
@@ -1090,7 +1093,8 @@
         "close",
         " in-progress"
       ],
-      "isAllProject": true
+      "isAllProject": true,
+      "isAllCustomer": true
     }
   },
   "get_defect_rate_norm_score": {
@@ -1251,6 +1255,7 @@
       ],
       "isCompany": true,
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -1356,6 +1361,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -1492,6 +1498,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -1596,6 +1603,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "sort": 1,
       "standardComparison": 1
     }
@@ -1714,6 +1722,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -1830,6 +1839,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -1910,7 +1920,8 @@
         "close",
         " in-progress"
       ],
-      "isAllProject": true
+      "isAllProject": true,
+      "isAllCustomer": true
     }
   },
   "get_leakage_rate_norm_score": {
@@ -1961,6 +1972,7 @@
     },
     "example_body": {
       "toDate": "2025-04-29",
+      "isCompany": true,
       "projectType": [
         "T&M",
         "package"
@@ -1968,7 +1980,9 @@
       "projectStatus": [
         "close",
         " in-progress"
-      ]
+      ],
+      "isAllProject": true,
+      "isAllCustomer": true
     }
   },
   "get_compare_average_leakage_rate_of_projects_by_unit": {
@@ -2074,6 +2088,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -2170,6 +2185,7 @@
     },
     "example_body": {
       "isAllProject": true,
+      "isAllCustomer": true,
       "organization": [],
       "customerList": [],
       "isCompany": true,
@@ -2317,6 +2333,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -2421,6 +2438,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "sort": 1,
       "standardComparison": 1
     }
@@ -2528,6 +2546,7 @@
     },
     "example_body": {
       "fromDate": "2025-01-01",
+      "toDate": "2025-04-29",
       "isCompany": true,
       "projectType": [
         "T&M",
@@ -2538,6 +2557,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -2654,6 +2674,7 @@
         " in-progress"
       ],
       "isAllProject": true,
+      "isAllCustomer": true,
       "standardComparison": 1
     }
   },
@@ -6257,6 +6278,14 @@
       }
     },
     "example_body": {
+      "dateFilter": {
+        "type": 5,
+        "values": [
+          "2024-12-31",
+          "2025-12-31"
+        ],
+        "typeSearch": 3
+      },
       "fromDate": "2024-12-31",
       "toDate": "2025-12-31",
       "type": 3,
@@ -6304,6 +6333,14 @@
       }
     },
     "example_body": {
+      "dateFilter": {
+        "type": 3,
+        "values": [
+          "2024-12-31",
+          "2025-12-31"
+        ],
+        "typeSearch": 3
+      },
       "fromDate": "2024-12-31",
       "toDate": "2025-12-31",
       "type": 3,
@@ -6801,6 +6838,14 @@
       }
     },
     "example_body": {
+      "dateFilter": {
+        "type": 5,
+        "values": [
+          "2024-12-31",
+          "2025-12-31"
+        ],
+        "typeSearch": 3
+      },
       "fromDate": "2024-12-31",
       "toDate": "2025-12-31",
       "type": 3,
@@ -8888,6 +8933,7 @@
     "example_body": {
       "fromDate": "2025-07-01",
       "toDate": "2025-07-31",
+      "type": [],
       "lcntOption": [],
       "lcntOptionDoing": [],
       "lcntType": [],
@@ -9855,6 +9901,7 @@
     "example_body": {
       "fromDate": "2023-09-01",
       "toDate": "2025-06-24",
+      "type": 5,
       "lcntOption": [],
       "lcntOptionDoing": [],
       "lcntType": [],
@@ -10045,6 +10092,7 @@
     "example_body": {
       "fromDate": "2025-07-01",
       "toDate": "2025-07-31",
+      "type": 5,
       "lcntOption": [],
       "lcntOptionDoing": [],
       "lcntType": [],
@@ -12275,7 +12323,8 @@
     },
     "example_body": {
       "fromDate": "2025-07-01",
-      "toDate": "2025-07-31"
+      "toDate": "2025-07-31",
+      "type": 3
     }
   },
   "subtask_progress_by_individual": {
@@ -12407,7 +12456,8 @@
     },
     "example_body": {
       "fromDate": "2025-06-01",
-      "toDate": "2025-06-16"
+      "toDate": "2025-06-16",
+      "assetGroup": {}
     }
   },
   "revenue_growth_by_unit": {
@@ -12663,7 +12713,13 @@
     "example_body": {
       "fromDate": "2023-09-01",
       "toDate": "2025-06-24",
-      "type": 5
+      "type": 5,
+      "lcntOption": [],
+      "lcntOptionDoing": [],
+      "lcntType": [],
+      "bidPlanType": [],
+      "lcntDomainType": [],
+      "status": []
     }
   },
   "get_company_roe": {
@@ -12808,7 +12864,13 @@
     "example_body": {
       "fromDate": "2025-07-01",
       "toDate": "2025-07-31",
-      "type": 5
+      "type": 5,
+      "lcntOption": [],
+      "lcntOptionDoing": [],
+      "lcntType": [],
+      "bidPlanType": [],
+      "lcntDomainType": [],
+      "status": []
     }
   },
   "get_company_roa": {
@@ -12865,7 +12927,13 @@
     "example_body": {
       "fromDate": "2025-07-01",
       "toDate": "2025-07-31",
-      "type": 5
+      "type": 5,
+      "lcntOption": [],
+      "lcntOptionDoing": [],
+      "lcntType": [],
+      "bidPlanType": [],
+      "lcntDomainType": [],
+      "status": []
     }
   },
   "cumulative_loss_by_unit": {
@@ -13010,7 +13078,8 @@
     "example_body": {
       "fromDate": "2025-07-01",
       "toDate": "2025-07-24",
-      "type": 5
+      "type": 5,
+      "status": []
     }
   },
   "get_shopping_suggestions_by_period": {
