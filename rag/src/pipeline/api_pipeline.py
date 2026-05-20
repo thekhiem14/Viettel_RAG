@@ -67,7 +67,7 @@ def run(question: Question) -> dict:
     ms_llm = round((time.perf_counter() - t0) * 1000)
     logger.info("stage_llm", extra={"id": question.id, "func_code": top1.func_code, "ms": ms_llm})
     print(f"[api] id={question.id}  llm={ms_llm}ms  func_code={top1.func_code}")
-    result = {"func_code": top1.func_code, "path": top1.path, "body": body}
+    result = {"path": top1.path, "body": body}
 
     time_response = round(time.perf_counter() - t_start, 3)
     print(f"[api] id={question.id}  body={result.get('body')}")
