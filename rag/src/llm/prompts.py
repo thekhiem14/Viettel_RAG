@@ -110,12 +110,11 @@ def build_doc_prompt(chunks: list[Chunk], question: str, options: dict[str, str]
 
     options_text = "   ".join(f"{k}. {v}" for k, v in options.items())
 
-    return f"""Dựa vào các đoạn tài liệu dưới đây, hãy chọn đáp án đúng cho câu hỏi trắc nghiệm.
-
+    return f"""Dựa vào các đoạn tài liệu dưới đây, hãy lập luận từng bước rồi chọn đáp án đúng.
 {context_blocks}
 
 Câu hỏi: {question}
 {options_text}
 
-Chỉ trả về đúng 1 chữ cái đáp án (A, B, C hoặc D). Không giải thích.
+Chỉ trả lời bằng chữ cái đáp án, không giải thích, không suy nghĩ thêm. Chỉ chọn duy nhất 1 đáp án.
 Đáp án:"""
