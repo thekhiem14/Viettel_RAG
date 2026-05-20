@@ -51,6 +51,8 @@ def predict(question: Question) -> tuple[str, float]:
     best_score  = -1.0
 
     for intent, index_path in INTENT_STORES.items():
+        if not Path(index_path).exists():
+            continue
         store = FaissStore()
         store.load(Path(index_path))
         hits  = store.search(query_vec, top_k=3)
