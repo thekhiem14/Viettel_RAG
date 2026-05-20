@@ -1,3 +1,14 @@
+"""call_api pipeline v2.
+
+Flow tổng quan:
+  S1. Retrieval         → top-1 APIEntry phù hợp câu hỏi
+  S2. Rule-based extract → pre_filled (date, organization, projectList, ...)
+  S3. LLM fill body      → đọc description, sinh JSON body đầy đủ key
+  S4. Coerce + order     → ép kiểu, giữ null/[], sort key theo schema
+
+Pre_filled luôn override LLM body (rule-based chắc chắn hơn cho date/org).
+Fallback: nếu LLM fail 2 lần → dùng example_body + default theo type.
+"""
 from __future__ import annotations
 
 import json
@@ -18,6 +29,13 @@ from shared.utils.logger import get_logger
 
 logger = get_logger("api_pipeline_v2", config.LOGS_DIR)
 
+# Số lần retry LLM khi parse body fail
+_LLM_MAX_ATTEMPTS = 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Lazy singletons
+# ──────────────────────────────────────────────────────────────────────────────
+
 _retriever: APIRetriever | None = None
 _schemas: dict[str, APIEntry] | None = None
 
@@ -37,150 +55,188 @@ def _get_schemas() -> dict[str, APIEntry]:
     return _schemas
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Helpers — schema introspection
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _schema_params(candidate: APIEntry) -> dict[str, dict]:
+    """Map {param_name: param_dict} gộp required + optional theo thứ tự schema."""
+    all_params = (candidate.required_params or []) + (candidate.optional_params or [])
+    return {p["name"]: p for p in all_params if "name" in p}
+
+
 def _default_for_type(type_str: str):
+    """Default value cho 1 param dựa trên kiểu khai báo trong schema."""
     t = (type_str or "").lower()
     if "list" in t:
         return []
-    if "bool" in t:
-        return None
-    if "date" in t:
+    if "date" in t or "string" in t:
         return ""
-    if "int" in t or "long" in t:
-        return None
-    if "string" in t:
-        return ""
+    # bool, int, long → None
     return None
 
 
-def _build_fallback_body(candidate: APIEntry, pre_filled: dict) -> dict:
-    """Fallback khi LLM fail: dùng example_body + pre_filled, đảm bảo đủ key."""
-    required = candidate.required_params or []
-    optional = candidate.optional_params or []
-    schema_params = {p["name"]: p for p in required + optional if "name" in p}
-    valid_keys = set(schema_params.keys())
+# ──────────────────────────────────────────────────────────────────────────────
+# Body builders
+# ──────────────────────────────────────────────────────────────────────────────
 
+def _build_fallback_body(candidate: APIEntry, pre_filled: dict) -> dict:
+    """Body cho trường hợp LLM fail: example_body → default → pre_filled override."""
+    params = _schema_params(candidate)
+    valid_keys = set(params.keys())
     body: dict = {}
-    # Bắt đầu từ example_body
-    if candidate.example_body and isinstance(candidate.example_body, dict):
+
+    # 1) Seed từ example_body (chỉ key hợp lệ)
+    if isinstance(candidate.example_body, dict):
         for k, v in candidate.example_body.items():
             if k in valid_keys:
                 body[k] = v
-    # Fill key còn thiếu bằng default
-    for k, p in schema_params.items():
+
+    # 2) Fill key còn thiếu bằng default theo type
+    for k, p in params.items():
         if k not in body:
             body[k] = _default_for_type(p.get("type", ""))
-    # Override bằng pre_filled (rule-based đã chắc chắn)
+
+    # 3) Override bằng pre_filled (rule-based luôn thắng)
     for k, v in pre_filled.items():
         if k in valid_keys:
             body[k] = v
     return body
 
 
+def _coerce_value(value, ptype: str):
+    """Ép value về đúng kiểu schema. Giữ null/[] thay vì drop."""
+    t = ptype.lower()
+
+    if "list" in t:
+        if value is None:
+            return []
+        if isinstance(value, str):
+            return [value] if value else []
+        if not isinstance(value, list):
+            return [value]
+        return value
+
+    if "bool" in t and isinstance(value, str):
+        return {"true": True, "false": False}.get(value.lower())
+
+    if ("int" in t or "long" in t) and isinstance(value, str):
+        return int(value) if value.lstrip("-").isdigit() else None
+
+    if "date" in t and not isinstance(value, str):
+        return ""
+
+    return value
+
+
 def _coerce_and_order(body: dict, candidate: APIEntry) -> dict:
-    """Ép kiểu + đảm bảo null/[] không bị drop + sort key theo schema order."""
-    required = candidate.required_params or []
-    optional = candidate.optional_params or []
-    schema_params = {p["name"]: p for p in required + optional if "name" in p}
-    valid_keys = set(schema_params.keys())
-
-    coerced: dict = {}
-    for k, p in schema_params.items():
-        v = body.get(k)  # lấy từ body LLM, có thể None/missing
-        ptype = (p.get("type") or "").lower()
-
-        if "list" in ptype:
-            # null/missing → [], string → [string]
-            if v is None:
-                v = []
-            elif isinstance(v, str):
-                v = [v] if v else []
-            elif not isinstance(v, list):
-                v = [v]
-        elif "bool" in ptype:
-            if isinstance(v, str):
-                v = {"true": True, "false": False}.get(v.lower(), None)
-        elif "int" in ptype or "long" in ptype:
-            if isinstance(v, str):
-                v = int(v) if v.lstrip("-").isdigit() else None
-        elif "date" in ptype:
-            if not isinstance(v, str):
-                v = ""
-
-        # Giữ key dù null/[] — KHÔNG drop
-        if k in valid_keys:
-            coerced[k] = v
-
-    # Thứ tự: required trước, optional sau (theo thứ tự schema)
-    order = [p["name"] for p in required + optional if "name" in p]
-    return {k: coerced[k] for k in order if k in coerced}
+    """Ép kiểu mọi key + giữ thứ tự required-before-optional theo schema."""
+    params = _schema_params(candidate)
+    ordered: dict = {}
+    for name, p in params.items():
+        ordered[name] = _coerce_value(body.get(name), p.get("type", ""))
+    return ordered
 
 
-def run(question: Question) -> dict:
-    """call_api pipeline v2.
+# ──────────────────────────────────────────────────────────────────────────────
+# Stages
+# ──────────────────────────────────────────────────────────────────────────────
 
-    Flow:
-      S1. Retrieval → top-1 API
-      S2. Rule-based extract → pre_filled (chỉ date + organization + projectList)
-      S3. LLM fill full body (đọc description, override pre_filled cuối cùng)
-      S4. Coerce + order (đảm bảo null/[] giữ nguyên, đúng kiểu)
-    """
-    t_start = time.perf_counter()
-    retriever = _get_retriever()
-    schemas = _get_schemas()
-
-    # S1: Retrieval
+def _stage_retrieval(question: Question) -> tuple[APIEntry, int]:
+    """S1: search top-1 APIEntry. Fallback: first N schema entries."""
     t0 = time.perf_counter()
-    hits = retriever.search(question.question)
-    candidates: list[APIEntry] = [schemas[h.id] for h in hits if h.id in schemas]
+    schemas = _get_schemas()
+    hits = _get_retriever().search(question.question)
+    candidates = [schemas[h.id] for h in hits if h.id in schemas]
     if not candidates:
         candidates = list(schemas.values())[:config.API_RETRIEVE_TOP_K]
-    ms_ret = round((time.perf_counter() - t0) * 1000)
-    top1 = candidates[0]
+    ms = round((time.perf_counter() - t0) * 1000)
+    return candidates[0], ms
+
+
+def _stage_extract(question: Question) -> tuple[dict, int]:
+    """S2: rule-based extract date/organization/projectList từ câu hỏi."""
+    t0 = time.perf_counter()
+    pre_filled = extract_all(question.question)
+    ms = round((time.perf_counter() - t0) * 1000)
+    return pre_filled, ms
+
+
+def _stage_llm_body(
+    question: Question,
+    top1: APIEntry,
+    pre_filled: dict,
+) -> tuple[dict, str, int, bool]:
+    """S3: LLM sinh body, retry tối đa _LLM_MAX_ATTEMPTS.
+
+    Returns (body, raw_llm_last, ms, llm_ok).
+    Nếu LLM ok → override pre_filled vào body trước khi trả về.
+    Nếu fail → build fallback body từ example + default + pre_filled.
+    """
+    t0 = time.perf_counter()
+    prompt = build_api_prompt_v2(question.question, top1, pre_filled)
+
+    raw_llm = ""
+    llm_body: dict | None = None
+    for attempt in range(_LLM_MAX_ATTEMPTS):
+        try:
+            raw_llm = generate(prompt)
+            parsed = validate_body_output(raw_llm)
+            if parsed:
+                llm_body = parsed
+                break
+        except Exception as e:
+            logger.warning(
+                "llm_attempt_failed",
+                extra={"id": question.id, "attempt": attempt, "error": str(e)},
+            )
+
+    ms = round((time.perf_counter() - t0) * 1000)
+
+    if llm_body is not None:
+        # Rule-based pre_filled luôn thắng LLM (date/org chắc chắn hơn)
+        for k, v in pre_filled.items():
+            llm_body[k] = v
+        return llm_body, raw_llm, ms, True
+
+    # LLM fail → fallback
+    logger.warning("llm_failed_use_fallback", extra={"id": question.id})
+    return _build_fallback_body(top1, pre_filled), raw_llm, ms, False
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Entry point
+# ──────────────────────────────────────────────────────────────────────────────
+
+def run(question: Question) -> dict:
+    """Chạy full pipeline cho 1 câu hỏi → dict kết quả chuẩn cho orchestrator."""
+    t_start = time.perf_counter()
+
+    # S1: Retrieval
+    top1, ms_ret = _stage_retrieval(question)
     logger.info("stage_retrieval", extra={"id": question.id, "top1": top1.func_code, "ms": ms_ret})
     print(f"[api_v2] id={question.id}  retrieval={ms_ret}ms  top1={top1.func_code}")
 
-    # S2: Rule-based extract (date, organization, projectList)
-    t0 = time.perf_counter()
-    pre_filled = extract_all(question.question)
-    ms_ext = round((time.perf_counter() - t0) * 1000)
+    # S2: Rule-based extract
+    pre_filled, ms_ext = _stage_extract(question)
     print(f"[api_v2] id={question.id}  extract={ms_ext}ms  pre_filled={list(pre_filled.keys())}")
 
-    # S3: LLM fill full body
-    raw_llm = ""
-    t0 = time.perf_counter()
-    prompt = build_api_prompt_v2(question.question, top1, pre_filled)
-    llm_ok = False
-    for attempt in range(2):
-        try:
-            raw = generate(prompt)
-            raw_llm = raw
-            llm_body = validate_body_output(raw)
-            if llm_body:
-                llm_ok = True
-                break
-        except Exception as e:
-            logger.warning("llm_attempt_failed", extra={"id": question.id, "attempt": attempt, "error": str(e)})
-    ms_llm = round((time.perf_counter() - t0) * 1000)
-
+    # S3: LLM fill body (+ override pre_filled, hoặc fallback)
+    body, raw_llm, ms_llm, llm_ok = _stage_llm_body(question, top1, pre_filled)
+    print(f"[api_v2] id={question.id}  raw_llm={raw_llm!r}")
     if llm_ok:
-        # Override pre_filled vào body LLM (rule-based chắc chắn hơn LLM cho date/org)
-        for k, v in pre_filled.items():
-            llm_body[k] = v
-        body = llm_body
         print(f"[api_v2] id={question.id}  llm={ms_llm}ms  keys={list(body.keys())}")
     else:
-        body = _build_fallback_body(top1, pre_filled)
-        logger.warning("llm_failed_use_fallback", extra={"id": question.id})
         print(f"[api_v2] id={question.id}  llm=FAILED → fallback body")
 
-    # S4: Coerce + order
+    # S4: Coerce + order theo schema
     body = _coerce_and_order(body, top1)
 
+    # Build func_param chuẩn submission format
+    func_param = {"func_code": top1.func_code, "path": top1.path, "body": body}
     time_response = round(time.perf_counter() - t_start, 3)
     print(f"[api_v2] id={question.id}  TOTAL={time_response:.2f}s")
     print(f"[api_v2] id={question.id}  body={json.dumps(body, ensure_ascii=False)}")
-
-    func_param = {"func_code": top1.func_code, "path": top1.path, "body": body}
 
     return {
         "id": question.id,
