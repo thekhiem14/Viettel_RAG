@@ -38,9 +38,9 @@ def _get_faiss() -> FaissStore:
 # Mỗi intent = 1 kho vector riêng
 INTENT_STORES = {
     "call_api":      "artifacts/api/faiss.index",
-    "call_document": "artifacts/doc/faiss.index",
-    # thêm intent mới chỉ cần thêm dòng này:
-    "call_database": "artifacts/db/faiss.index",
+    "call_document": "artifacts/docs/faiss.index",
+    # # thêm intent mới chỉ cần thêm dòng này:
+    # "call_database": "artifacts/db/faiss.index",
 }
 
 def predict(question: Question) -> tuple[str, float]:
