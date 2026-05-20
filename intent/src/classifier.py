@@ -35,19 +35,37 @@ def _get_faiss() -> FaissStore:
     return _faiss
 
 
+# Mỗi intent = 1 kho vector riêng
+INTENT_STORES = {
+    "call_api":      "artifacts/api/faiss.index",
+    "call_document": "artifacts/doc/faiss.index",
+    # thêm intent mới chỉ cần thêm dòng này:
+    "call_database": "artifacts/db/faiss.index",
+}
+
 def predict(question: Question) -> tuple[str, float]:
-    """Predict intent: 'call_api' nếu cosine sim cao, 'call_document' nếu thấp.
+    query_vec = _get_embedder().encode_query(question.question)
+    
+    # best_intent = None
+    best_intent = "call_document"
+    best_score  = -1.0
 
-    KHÔNG dùng question.note — đề bài cấm.
-    """
-    embedder = _get_embedder()
-    faiss = _get_faiss()
+    for intent, index_path in INTENT_STORES.items():
+        store = FaissStore()
+        store.load(Path(index_path))
+        hits  = store.search(query_vec, top_k=3)
+        if not hits:
+            continue
+        
+        # Lấy điểm trung bình top-3 của kho này
+        score = sum(h.score for h in hits[:3]) / 3
+        
+        if score > best_score:
+            best_score  = score
+            best_intent = intent
 
-    query_vec = embedder.encode_query(question.question)
-    hits = faiss.search(query_vec, top_k=1)
+    # # Nếu điểm cao nhất vẫn thấp → không chắc
+    # if best_score < config.INTENT_LOW_THRESHOLD:
+    #     return "unknown", best_score
 
-    sim = hits[0].score if hits else 0.0
-
-    if sim >= config.INTENT_COSINE_THRESHOLD:
-        return "call_api", sim
-    return "call_document", 1.0 - sim
+    return best_intent, best_score
