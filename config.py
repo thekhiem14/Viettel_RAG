@@ -51,8 +51,8 @@ RRF_K              = 60
 RERANK_TOP_K       = 5
 API_RETRIEVE_TOP_K = 5
 
-# --- Intent (cosine vs API embeddings) ---
-INTENT_COSINE_THRESHOLD = 0.55
+# --- Intent classifier ---
+INTENT_TOP_K = 5            # số neighbors / intent (K-NN cosine)
 
 # --- Doc retrieval filter ---
 DOC_USE_FILTER = True  # False để tắt Public_XXX filter nếu đề bài cấm

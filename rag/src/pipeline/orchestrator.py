@@ -74,9 +74,14 @@ def warmup() -> None:
         print(f"{time.perf_counter() - t:.2f}s (output: {len(output)} chars)")
     _stage("4. LLM (Qwen2.5-3B 4-bit)", _w_llm)
 
-    # 5. Intent classifier — wrapper quanh Embedder + FaissStore (đã warm ở #1+#2)
+    # 5. Intent classifier — Embedder + FaissStore đã warm ở #1+#2
     def _w_intent() -> None:
-        print(f"  [5a] predict() inference... ", end="", flush=True)
+        from intent.src.classifier import _get_stores
+        print(f"  [5a] load FAISS clusters... ", end="", flush=True)
+        t = time.perf_counter()
+        _get_stores()
+        print(f"{time.perf_counter() - t:.2f}s")
+        print(f"  [5b] predict() inference... ", end="", flush=True)
         t = time.perf_counter()
         label, conf = predict(Question(id=0, question="warmup", note=None))
         print(f"{time.perf_counter() - t:.2f}s (label={label}, conf={conf:.3f})")

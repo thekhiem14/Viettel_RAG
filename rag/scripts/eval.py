@@ -192,7 +192,7 @@ def main() -> None:
     print(f"  Saved -> {out_eval}")
 
     if metrics["intent_accuracy"] < 0.95:
-        print(f"\n  !! Intent accuracy < 95% — check INTENT_COSINE_THRESHOLD (hiện: {config.INTENT_COSINE_THRESHOLD})")
+        print(f"\n  !! Intent accuracy < 95% — check INTENT_TOP_K={config.INTENT_TOP_K}")
     if metrics["avg_time_response"] > config.TIME_RESPONSE_TARGET:
         print(f"  !! avg time > {config.TIME_RESPONSE_TARGET}s — cần optimize")
 
