@@ -14,7 +14,10 @@ from rag.src.retrieval.rrf import rrf_fusion
 from shared.types import Chunk
 from shared.utils.io import load_jsonl
 
-_PUBLIC_RE = re.compile(r"Public_\d+")
+_PUBLIC_RE = re.compile(
+    r'(?:Public[ _\-]?(\d{1,4})|TD[ _\-]?(\d{1,4}))',
+    re.IGNORECASE,
+)
 _embedder: Embedder | None = None
 _chunks_map: dict[str, Chunk] | None = None
 
@@ -83,6 +86,13 @@ class DocRetriever:
 
     @staticmethod
     def extract_doc_id(question: str) -> str | None:
-        """Regex extract Public_XXX từ câu hỏi."""
+        """Regex extract doc_id từ câu hỏi.
+
+        Match các biến thể: Public_042, Public 042, Public-042, TD642, TD_642, TD-642.
+        Trả về format chuẩn "Public_XXX" (pad 3 digits) để khớp chunk_id prefix.
+        """
         m = _PUBLIC_RE.search(question)
-        return m.group() if m else None
+        if not m:
+            return None
+        num = m.group(1) or m.group(2)
+        return f"Public_{int(num):03d}"

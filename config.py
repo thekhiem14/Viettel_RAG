@@ -39,16 +39,22 @@ RERANK_MODEL     = "BAAI/bge-reranker-v2-m3"
 LLM_MODEL        = "Qwen/Qwen2.5-3B-Instruct-AWQ"  # vLLM AWQ 4-bit, ~2.5GB VRAM (T4-friendly cho v2)
 LLM_QUANTIZATION = "awq"
 
-# --- Chunking ---
-CHUNK_MIN_CHARS = 20
-CHUNK_MAX_CHARS = 600
-CHUNK_OVERLAP   = 80
+# --- Chunking (sentence-aware, heading-first) ---
+CHUNK_MIN_CHARS         = 100    # section ngắn hơn → bỏ qua
+CHUNK_TARGET_CHARS      = 800    # target size mỗi chunk (gom câu cho đến khi đạt)
+CHUNK_MAX_CHARS         = 1200   # hard cap — nếu vượt thì dừng gom
+CHUNK_OVERLAP_SENTENCES = 2      # số câu overlap giữa 2 chunk liền kề
+
+# Legacy word-based params (giữ lại cho backward compat / fallback)
+CHUNK_MIN_WORDS     = 5
+CHUNK_MAX_WORDS     = 120
+CHUNK_OVERLAP_WORDS = 15
 
 # --- Retrieval ---
 BM25_TOP_K         = 20
 FAISS_TOP_K        = 20
 RRF_K              = 60
-RERANK_TOP_K       = 5
+RERANK_TOP_K       = 3
 API_RETRIEVE_TOP_K = 5
 
 # --- Intent classifier ---

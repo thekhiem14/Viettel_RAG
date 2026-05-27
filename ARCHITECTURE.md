@@ -157,16 +157,16 @@ RERANK_MODEL     = "BAAI/bge-reranker-v2-m3"
 LLM_MODEL        = "Qwen/Qwen3-4B"
 LLM_QUANTIZATION = "4bit"
 
-# Chunking
-CHUNK_MIN_CHARS = 80
-CHUNK_MAX_CHARS = 600
-CHUNK_OVERLAP   = 80
+# Chunking (word-based)
+CHUNK_MIN_WORDS     = 5
+CHUNK_MAX_WORDS     = 120
+CHUNK_OVERLAP_WORDS = 15
 
 # Retrieval
 BM25_TOP_K         = 20
 FAISS_TOP_K        = 20
 RRF_K              = 60
-RERANK_TOP_K       = 5
+RERANK_TOP_K       = 3
 API_RETRIEVE_TOP_K = 5
 
 # LLM
