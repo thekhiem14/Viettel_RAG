@@ -2,7 +2,7 @@
 
 Metrics:
   - Intent accuracy (predicted vs GT func_code)
-  - call_api: JSON validity, func_code match, path match
+  - call_api: JSON validity, func_code match, path match, per-param accuracy
   - call_document: answer format valid (A/B/C/D), exact answer match
   - Avg time_response
 
@@ -12,6 +12,7 @@ Usage:
 Output:
     outputs/eval/predictions.jsonl
     outputs/eval/metrics.json
+    outputs/eval/api_param_errors.csv  (per-question param diff)
 """
 from __future__ import annotations
 
@@ -20,6 +21,7 @@ import json
 import re
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -65,13 +67,63 @@ def _parse_answer(func_param_gt: str) -> str:
 
 
 def _parse_api_gt(func_param_gt: str, path_to_fc: dict[str, str]) -> dict:
-    """Parse GT func_param → {func_code, path}. func_code lấy qua path→schemas mapping."""
+    """Parse GT func_param → {func_code, path, body}. func_code lấy qua path→schemas mapping."""
     try:
         parsed = json.loads(func_param_gt)
         path = parsed.get("path", "")
-        return {"func_code": path_to_fc.get(path, ""), "path": path}
+        body = parsed.get("body", {})
+        if isinstance(body, str):
+            try:
+                body = json.loads(body)
+            except Exception:
+                body = {}
+        return {"func_code": path_to_fc.get(path, ""), "path": path, "body": body if isinstance(body, dict) else {}}
     except Exception:
-        return {"func_code": "", "path": ""}
+        return {"func_code": "", "path": "", "body": {}}
+
+
+def _norm_value(v):
+    """Chuẩn hóa value để so sánh: list sort, string strip lower, None/[]/'' coi như rỗng."""
+    if v is None or v == "" or v == []:
+        return None
+    if isinstance(v, list):
+        return tuple(sorted(str(x).strip().lower() for x in v))
+    if isinstance(v, str):
+        return v.strip().lower()
+    return v
+
+
+def _diff_body(pred_body: dict, gt_body: dict) -> dict:
+    """So sánh từng param trong body. Returns:
+        {
+          "missing":  list[str]  — key có trong GT, không có trong pred (hoặc giá trị rỗng)
+          "extra":    list[str]  — key có trong pred, không có trong GT
+          "wrong":    list[(key, pred_val, gt_val)] — giá trị khác
+          "correct":  list[str]
+        }
+    """
+    missing, extra, wrong, correct = [], [], [], []
+    gt_keys = set(gt_body.keys())
+    pred_keys = set(pred_body.keys())
+
+    for k in gt_keys:
+        gt_v = _norm_value(gt_body.get(k))
+        pred_v = _norm_value(pred_body.get(k))
+        if k not in pred_keys or pred_v is None:
+            if gt_v is not None:  # GT có giá trị thật → coi là missing
+                missing.append(k)
+            else:
+                correct.append(k)  # cả 2 đều rỗng
+        elif pred_v == gt_v:
+            correct.append(k)
+        else:
+            wrong.append((k, pred_body.get(k), gt_body.get(k)))
+
+    for k in pred_keys - gt_keys:
+        if _norm_value(pred_body.get(k)) is not None:
+            extra.append(k)
+
+    return {"missing": missing, "extra": extra, "wrong": wrong, "correct": correct}
 
 
 def main() -> None:
@@ -99,6 +151,14 @@ def main() -> None:
     api_json_valid = api_code_match = api_path_match = 0
     doc_format_valid = doc_answer_match = 0
 
+    # Per-param tracking
+    missing_counter: Counter = Counter()
+    extra_counter: Counter = Counter()
+    wrong_counter: Counter = Counter()
+    param_total_correct = 0
+    param_total = 0
+    api_param_rows: list[dict] = []
+
     for r in results:
         qid = str(r["id"])
         pred_code = r["function_code"]
@@ -113,16 +173,41 @@ def main() -> None:
             api_results.append(r)
             try:
                 pred = json.loads(r["function_result"])
-                has_fields = "func_code" in pred and "path" in pred and "body" in pred
+                has_fields = "path" in pred and "body" in pred
                 if has_fields:
                     api_json_valid += 1
                 gt_api = _parse_api_gt(gt_param, path_to_fc)
-                if pred.get("func_code") == gt_api.get("func_code"):
+                pred_fc = pred.get("func_code") or path_to_fc.get(pred.get("path", ""), "")
+                if pred_fc == gt_api.get("func_code"):
                     api_code_match += 1
                 if pred.get("path") == gt_api.get("path"):
                     api_path_match += 1
-            except Exception:
-                pass
+
+                # Param-level diff (chỉ chấm khi path đúng, không thì meaningless)
+                if pred.get("path") == gt_api.get("path"):
+                    pred_body = pred.get("body", {}) or {}
+                    gt_body = gt_api.get("body", {}) or {}
+                    diff = _diff_body(pred_body, gt_body)
+                    for k in diff["missing"]:
+                        missing_counter[k] += 1
+                    for k in diff["extra"]:
+                        extra_counter[k] += 1
+                    for k, _, _ in diff["wrong"]:
+                        wrong_counter[k] += 1
+                    n_gt = len(diff["correct"]) + len(diff["missing"]) + len(diff["wrong"])
+                    param_total += n_gt
+                    param_total_correct += len(diff["correct"])
+                    api_param_rows.append({
+                        "id": qid,
+                        "path": pred.get("path", ""),
+                        "missing": ",".join(diff["missing"]),
+                        "extra": ",".join(diff["extra"]),
+                        "wrong": "; ".join(f"{k}={pv!r}→{gv!r}" for k, pv, gv in diff["wrong"]),
+                        "n_correct": len(diff["correct"]),
+                        "n_total": n_gt,
+                    })
+            except Exception as e:
+                logger.warning("api_eval_parse_failed", extra={"id": qid, "err": str(e)})
 
         else:  # call_document
             doc_results.append(r)
@@ -147,6 +232,12 @@ def main() -> None:
         "api_json_valid_rate": round(api_json_valid / n_api, 4),
         "api_func_code_match_rate": round(api_code_match / n_api, 4),
         "api_path_match_rate": round(api_path_match / n_api, 4),
+        "api_param_accuracy": round(param_total_correct / param_total, 4) if param_total else 0.0,
+        "api_param_total": param_total,
+        "api_param_correct": param_total_correct,
+        "api_top_missing": missing_counter.most_common(15),
+        "api_top_extra": extra_counter.most_common(15),
+        "api_top_wrong": wrong_counter.most_common(15),
         # doc
         "doc_format_valid_rate": round(doc_format_valid / n_doc, 4),
         "doc_answer_match_rate": round(doc_answer_match / n_doc, 4),
@@ -157,6 +248,15 @@ def main() -> None:
 
     out_metrics = config.OUTPUTS_DIR / "eval" / "metrics.json"
     save_json(out_metrics, metrics)
+
+    # ── Save per-question API param diff ─────────────────────────────────────
+    out_api_diff = config.OUTPUTS_DIR / "eval" / "api_param_errors.csv"
+    with open(out_api_diff, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["id", "path", "n_correct", "n_total", "missing", "extra", "wrong"],
+                                 quoting=csv.QUOTE_ALL)
+        writer.writeheader()
+        for row in api_param_rows:
+            writer.writerow(row)
 
     # ── Save submission_eval.csv ─────────────────────────────────────────────
     out_eval = config.OUTPUTS_DIR / "eval" / "submission_eval.csv"
@@ -184,12 +284,26 @@ def main() -> None:
     print(f"  API JSON valid:       {metrics['api_json_valid_rate']:.1%}  ({api_json_valid}/{len(api_results)})")
     print(f"  API func_code match:  {metrics['api_func_code_match_rate']:.1%}  ({api_code_match}/{len(api_results)})")
     print(f"  API path match:       {metrics['api_path_match_rate']:.1%}  ({api_path_match}/{len(api_results)})")
+    print(f"  API param accuracy:   {metrics['api_param_accuracy']:.1%}  ({param_total_correct}/{param_total})")
     print(f"  Doc format valid:     {metrics['doc_format_valid_rate']:.1%}  ({doc_format_valid}/{len(doc_results)})")
     print(f"  Doc answer match:     {metrics['doc_answer_match_rate']:.1%}  ({doc_answer_match}/{len(doc_results)})")
     print(f"  Avg time_response:    {metrics['avg_time_response']:.2f}s  (target <{config.TIME_RESPONSE_TARGET}s)")
-    print(f"  Saved -> {out_pred}")
+    if missing_counter:
+        print(f"\n  Top params MISSING (predict thiếu so với GT):")
+        for k, v in missing_counter.most_common(10):
+            print(f"    {k:<25} {v} lần")
+    if extra_counter:
+        print(f"\n  Top params EXTRA (predict thừa so với GT):")
+        for k, v in extra_counter.most_common(10):
+            print(f"    {k:<25} {v} lần")
+    if wrong_counter:
+        print(f"\n  Top params WRONG VALUE (giá trị sai):")
+        for k, v in wrong_counter.most_common(10):
+            print(f"    {k:<25} {v} lần")
+    print(f"\n  Saved -> {out_pred}")
     print(f"  Saved -> {out_metrics}")
     print(f"  Saved -> {out_eval}")
+    print(f"  Saved -> {out_api_diff}")
 
     if metrics["intent_accuracy"] < 0.95:
         print(f"\n  !! Intent accuracy < 95% — check INTENT_TOP_K={config.INTENT_TOP_K}")
