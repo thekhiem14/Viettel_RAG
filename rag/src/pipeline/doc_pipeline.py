@@ -82,7 +82,7 @@ def run(question: Question) -> dict:
     raw_output = generate(prompt)
     answer = _extract_answer(raw_output)
     # logger.info("stage_llm", extra={"id": question.id, "answer": answer})
-    # print(f"[doc] id={question.id}  answer={answer}")
+    # ##print(f"[doc] id={question.id}  answer={answer}")
 
     time_response = round(time.perf_counter() - t_start, 3)
     return {

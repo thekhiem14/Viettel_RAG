@@ -25,9 +25,9 @@ from rag.src.llm.prompts_v2 import build_api_prompt_v2
 from rag.src.llm.qwen import generate
 from rag.src.retrieval.api_retriever import APIRetriever
 from shared.types import APIEntry, Question
-from shared.utils.logger import get_logger
+from shared.utils.logger import get_#logger
 
-logger = get_logger("api_pipeline_v2", config.LOGS_DIR)
+#logger = get_#logger("api_pipeline_v2", config.LOGS_DIR)
 
 # Số lần retry LLM khi parse body fail
 _LLM_MAX_ATTEMPTS = 2
@@ -200,7 +200,7 @@ def _stage_llm_body(
         return llm_body, raw_llm, ms, True
 
     # LLM fail → fallback
-    logger.warning("llm_failed_use_fallback", extra={"id": question.id})
+    #logger.warning("llm_failed_use_fallback", extra={"id": question.id})
     return _build_fallback_body(top1, pre_filled), raw_llm, ms, False
 
 
@@ -214,20 +214,20 @@ def run(question: Question) -> dict:
 
     # S1: Retrieval
     top1, ms_ret = _stage_retrieval(question)
-    logger.info("stage_retrieval", extra={"id": question.id, "top1": top1.func_code, "ms": ms_ret})
-    print(f"[api_v2] id={question.id}  retrieval={ms_ret}ms  top1={top1.func_code}")
+    # #logger.info("stage_retrieval", extra={"id": question.id, "top1": top1.func_code, "ms": ms_ret})
+    #print(f"[api_v2] id={question.id}  retrieval={ms_ret}ms  top1={top1.func_code}")
 
     # S2: Rule-based extract
     pre_filled, ms_ext = _stage_extract(question)
-    print(f"[api_v2] id={question.id}  extract={ms_ext}ms  pre_filled={list(pre_filled.keys())}")
+    #print(f"[api_v2] id={question.id}  extract={ms_ext}ms  pre_filled={list(pre_filled.keys())}")
 
     # S3: LLM fill body (+ override pre_filled, hoặc fallback)
     body, raw_llm, ms_llm, llm_ok = _stage_llm_body(question, top1, pre_filled)
-    print(f"[api_v2] id={question.id}  raw_llm={raw_llm!r}")
-    if llm_ok:
-        print(f"[api_v2] id={question.id}  llm={ms_llm}ms  keys={list(body.keys())}")
-    else:
-        print(f"[api_v2] id={question.id}  llm=FAILED → fallback body")
+    #print(f"[api_v2] id={question.id}  raw_llm={raw_llm!r}")
+    # if llm_ok:
+        #print(f"[api_v2] id={question.id}  llm={ms_llm}ms  keys={list(body.keys())}")
+    # else:
+        #print(f"[api_v2] id={question.id}  llm=FAILED → fallback body")
 
     # S4: Coerce + order theo schema
     body = _coerce_and_order(body, top1)
@@ -235,8 +235,8 @@ def run(question: Question) -> dict:
     # Build func_param chuẩn submission format (không gồm func_code — đã có ở cột func_code riêng)
     func_param = {"path": top1.path, "body": body}
     time_response = round(time.perf_counter() - t_start, 3)
-    print(f"[api_v2] id={question.id}  TOTAL={time_response:.2f}s")
-    print(f"[api_v2] id={question.id}  body={json.dumps(body, ensure_ascii=False)}")
+    #print(f"[api_v2] id={question.id}  TOTAL={time_response:.2f}s")
+    #print(f"[api_v2] id={question.id}  body={json.dumps(body, ensure_ascii=False)}")
 
     return {
         "id": question.id,
