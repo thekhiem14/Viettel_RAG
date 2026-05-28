@@ -26,11 +26,6 @@ class _JsonFormatter(logging.Formatter):
 
 def get_logger(name: str, log_dir: Path | None = None, level: int = logging.INFO) -> logging.Logger:
     logger = logging.getLogger(name)
-    if logger.handlers:
-        return logger
-
-    logger.setLevel(level)
-    formatter = _JsonFormatter()
 
     # Only add stream handler (console logs) if not disabled in config
     try:
@@ -38,6 +33,21 @@ def get_logger(name: str, log_dir: Path | None = None, level: int = logging.INFO
         disable_console = getattr(config, "DISABLE_CONSOLE_LOG", False)
     except (ImportError, AttributeError):
         disable_console = False
+
+    if disable_console:
+        # Actively remove any stream handler writing to stdout/stderr
+        handlers_to_remove = []
+        for h in logger.handlers:
+            if isinstance(h, logging.StreamHandler) and h.stream in (sys.stdout, sys.stderr):
+                handlers_to_remove.append(h)
+        for h in handlers_to_remove:
+            logger.removeHandler(h)
+
+    if logger.handlers:
+        return logger
+
+    logger.setLevel(level)
+    formatter = _JsonFormatter()
 
     if not disable_console:
         stream_handler = logging.StreamHandler(sys.stdout)

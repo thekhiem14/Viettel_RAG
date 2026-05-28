@@ -60,6 +60,7 @@ def generate(prompt: str) -> str:
     n_output_tokens = len(output.token_ids)
     tps = round(n_output_tokens / elapsed, 1) if elapsed > 0 else 0
 
-    print(f"[llm] input_tokens={n_input_tokens}  output_tokens={n_output_tokens}  {elapsed*1000:.0f}ms  {tps}tok/s")
+    if not getattr(config, "DISABLE_CONSOLE_LOG", False):
+        print(f"[llm] input_tokens={n_input_tokens}  output_tokens={n_output_tokens}  {elapsed*1000:.0f}ms  {tps}tok/s")
 
     return output.text.strip()

@@ -27,4 +27,10 @@ def timed(label: str = "") -> Generator[Timer, None, None]:
     with t:
         yield t
     if label:
-        print(f"[timer] {label}: {t.elapsed:.3f}s")
+        try:
+            import config
+            disable_console = getattr(config, "DISABLE_CONSOLE_LOG", False)
+        except (ImportError, AttributeError):
+            disable_console = False
+        if not disable_console:
+            print(f"[timer] {label}: {t.elapsed:.3f}s")
