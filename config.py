@@ -11,7 +11,7 @@ ROOT = Path(__file__).parent  # Viettel_RAG/
 DATA_DIR       = Path(os.getenv("DATA_DIR",       str(ROOT / "data")))
 DOC_MD_DIR     = Path(os.getenv("DOC_MD_DIR",     str(ROOT / "data" / "document")))
 MINERU_OUT_DIR = Path(os.getenv("MINERU_OUT_DIR", str(ROOT / "training_data_update" / "output")))
-DOC_DATA = Path(os.getenv("DOC_DATA", str(ROOT / "data" / "chroma_db" / "all_pdfs_final_clean.md")))
+DOC_DATA = Path(os.getenv("DOC_DATA", str(ROOT / "data" / "chroma_db" / "chroma_documents.md")))
 
 API_CSV       = DATA_DIR / "Tài_liệu_config_API_Doc_api_for_contest.csv"
 API_ALIAS_CSV = DATA_DIR / "Tài_liệu_config_API_Doc_alias_for_contest.csv"

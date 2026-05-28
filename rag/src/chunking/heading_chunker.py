@@ -193,8 +193,8 @@ def chunk_all_documents(doc_md_dir: Path | None = None) -> list[Chunk]:
     Args:
         doc_md_dir: override path, mặc định dùng config.DOC_MD_DIR
     """
-    # Ưu tiên file tổng hợp từ chroma_db
-    combined = config.DATA_DIR / "chroma_db" / "chroma_documents.md"
+    # Ưu tiên file tổng hợp (đã được clean ở clean_md.py)
+    combined = config.DOC_DATA
     if combined.exists():
         print(f"[chunker] using combined file: {combined}")
         return chunk_combined_document(combined)

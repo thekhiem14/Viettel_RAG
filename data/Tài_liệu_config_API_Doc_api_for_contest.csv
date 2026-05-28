@@ -1066,7 +1066,7 @@ get_number_of_projects_with_defect_rate_measurement,Lấy số lượng dự án
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1207,7 +1207,7 @@ get_compare_average_defect_rate_of_projects_by_unit,Lấy Defect rate theo đơn
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1310,7 +1310,7 @@ get_average_defect_rate_of_projects_by_project_type,"Lấy thông tin điểm b�
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1423,7 +1423,7 @@ get_defect_rate_fluctuation_by_period,Lấy thông tin biến động Defect Rat
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1556,7 +1556,7 @@ get_average_ranking_score_of_project_defect_rate,Lấy thông tin điểm xếp 
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1658,7 +1658,7 @@ get_defect_rate_score_of_all_projects_in_period,Lấy thông tin điểm Defect 
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1771,7 +1771,7 @@ get_cumulative_defect_rate_score_of_all_projects,Lấy thông tin Defect rate l�
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -1874,7 +1874,7 @@ get_number_of_projects_with_leakage_rate_calculation,Lấy thông tin số lư�
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -2010,7 +2010,7 @@ get_compare_average_leakage_rate_of_projects_by_unit,Lấy thông tin so sánh �
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -2113,7 +2113,7 @@ get_average_leakage_rate_of_projects_by_project_type,Lấy thông tin điểm b�
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -2226,7 +2226,7 @@ get_leakage_rate_fluctuation_by_period,Lấy thông tin biến động Leakage R
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -2359,7 +2359,7 @@ get_average_ranking_score_of_project_leakage_rate,Lấy thông tin điểm xếp
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -2461,7 +2461,7 @@ get_leakage_rate_score_of_all_projects_in_period,Lấy thông tin điểm Leakag
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
@@ -2574,7 +2574,7 @@ get_cumulative_leakage_rate_score_of_all_projects,Lấy thông tin Leakage rate 
       ""description"": ""Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []""
     },
     {
-      ""name"": ""IsAllCustomer"",
+      ""name"": ""isAllCustomer "",
       ""type"": ""Boolean"",
       ""description"": ""Tất cả khách hàng hay không""
     },
