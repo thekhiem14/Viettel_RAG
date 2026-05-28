@@ -200,7 +200,7 @@ def _stage_llm_body(
         return llm_body, raw_llm, ms, True
 
     # LLM fail → fallback
-    #logger.warning("llm_failed_use_fallback", extra={"id": question.id})
+    logger.warning("llm_failed_use_fallback", extra={"id": question.id})
     return _build_fallback_body(top1, pre_filled), raw_llm, ms, False
 
 

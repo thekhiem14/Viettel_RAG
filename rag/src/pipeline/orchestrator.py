@@ -95,7 +95,7 @@ def run_one(question: Question) -> dict:
     """Route 1 câu hỏi → đúng pipeline → output dict."""
     t_start = time.perf_counter()
     label, confidence = predict(question)
-    # logger.info("intent", extra={"id": question.id, "label": label, "confidence": confidence})
+    logger.info("intent", extra={"id": question.id, "label": label, "confidence": confidence})
 
     try:
         if label == "call_document":
@@ -108,7 +108,7 @@ def run_one(question: Question) -> dict:
         result["time_response"] = round(time.perf_counter() - t_start, 3)
         return result
     except Exception as e:
-        # logger.error("pipeline_error", extra={"id": question.id, "error": str(e)})
+        logger.error("pipeline_error", extra={"id": question.id, "error": str(e)})
         fallback = "A" if label == "call_document" else ""
         return {
             "id": question.id,
