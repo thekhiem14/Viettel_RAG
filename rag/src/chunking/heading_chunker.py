@@ -82,27 +82,31 @@ def _parse_doc_block(doc_id: str, block: str) -> list[Chunk]:
     chunks: list[Chunk] = []
     chunk_counter = 0
 
-    # --- Intro paragraph: text trước heading đầu tiên ---
-    first_heading = _HEADING_RE.search(raw)
-    if first_heading and first_heading.start() > 0:
-        intro = raw[: first_heading.start()].strip()
-        if len(intro) >= config.CHUNK_MIN_CHARS:
-            prefix = f"[{doc_id}]\n\n"
-            text_with_prefix = prefix + intro
-            if len(text_with_prefix) <= config.CHUNK_MAX_CHARS:
-                chunks.append(Chunk(
-                    chunk_id=f"{doc_id}_{chunk_counter:03d}",
-                    doc_id=doc_id,
-                    heading_path=doc_id,
-                    level=0,
-                    char_count=len(text_with_prefix),
-                    text=text_with_prefix,
-                ))
-                chunk_counter += 1
-            else:
-                sub = _split_long_text(text_with_prefix, f"{doc_id}_{chunk_counter:03d}", doc_id, 0)
-                chunks.extend(sub)
-                chunk_counter += 1
+    # --- Intro paragraph: text trước heading H2-H6 đầu tiên ---
+    # Nếu không có heading → toàn bộ block là intro (doc CSV/plain text)
+    first_subheading = next(
+        (m for m in _HEADING_RE.finditer(raw) if len(m.group(1)) > 1),
+        None,
+    )
+    intro = raw[: first_subheading.start()].strip() if first_subheading else raw
+
+    if len(intro) >= config.CHUNK_MIN_CHARS:
+        prefix = f"[{doc_id}]\n\n"
+        text_with_prefix = prefix + intro
+        if len(text_with_prefix) <= config.CHUNK_MAX_CHARS:
+            chunks.append(Chunk(
+                chunk_id=f"{doc_id}_{chunk_counter:03d}",
+                doc_id=doc_id,
+                heading_path=doc_id,
+                level=0,
+                char_count=len(text_with_prefix),
+                text=text_with_prefix,
+            ))
+            chunk_counter += 1
+        else:
+            sub = _split_long_text(text_with_prefix, f"{doc_id}_{chunk_counter:03d}", doc_id, 0)
+            chunks.extend(sub)
+            chunk_counter += 1
 
     # --- Heading-based sections (H2–H5, bỏ qua H1 vì là separator) ---
     matches = [m for m in _HEADING_RE.finditer(raw) if len(m.group(1)) > 1]
@@ -194,7 +198,7 @@ def chunk_all_documents(doc_md_dir: Path | None = None) -> list[Chunk]:
         doc_md_dir: override path, mặc định dùng config.DOC_MD_DIR
     """
     # Ưu tiên file tổng hợp từ chroma_db
-    combined = config.DATA_DIR / "chroma_db" / "chroma_documents.md"
+    combined = config.DOC_DATA
     if combined.exists():
         print(f"[chunker] using combined file: {combined}")
         return chunk_combined_document(combined)
