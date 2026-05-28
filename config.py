@@ -54,7 +54,7 @@ CHUNK_OVERLAP_WORDS = 15
 BM25_TOP_K         = 20
 FAISS_TOP_K        = 20
 RRF_K              = 60
-RERANK_TOP_K       = 3
+RERANK_TOP_K       = 10
 API_RETRIEVE_TOP_K = 5
 
 # --- Intent classifier ---
