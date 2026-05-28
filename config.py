@@ -69,6 +69,9 @@ LLM_TEMPERATURE    = 0.0
 EVAL_ACCURACY_THRESHOLD = 0.70
 TIME_RESPONSE_TARGET    = 15.0
 
+# --- Logging ---
+DISABLE_CONSOLE_LOG = True
+
 
 def ensure_dirs() -> None:
     """Tạo các output directories nếu chưa tồn tại. Gọi 1 lần khi bắt đầu script."""
