@@ -58,9 +58,6 @@ INTENT_TOP_K = 5            # số neighbors / intent (K-NN cosine)
 # --- Doc retrieval filter ---
 DOC_USE_FILTER = True  # False để tắt Public_XXX filter nếu đề bài cấm
 
-# --- API pipeline version ---
-USE_API_V2 = True  # True → dùng api_pipeline_v2 (rule-based extract + LLM refine)
-
 # --- LLM ---
 LLM_MAX_NEW_TOKENS = 512
 LLM_THINKING_MODE  = False

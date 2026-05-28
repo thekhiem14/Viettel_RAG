@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from intent.src.classifier import predict
-from rag.src.pipeline import api_pipeline, api_pipeline_v2, doc_pipeline
+from rag.src.pipeline import api_pipeline_v2, doc_pipeline
 from shared.types import Question
 from shared.utils.logger import get_logger
 
@@ -101,10 +101,7 @@ def run_one(question: Question) -> dict:
         if label == "call_document":
             result = doc_pipeline.run(question)
         else:
-            if getattr(config, "USE_API_V2", False):
-                result = api_pipeline_v2.run(question)
-            else:
-                result = api_pipeline.run(question)
+            result = api_pipeline_v2.run(question)
         result["time_response"] = round(time.perf_counter() - t_start, 3)
         return result
     except Exception as e:
