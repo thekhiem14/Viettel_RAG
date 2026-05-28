@@ -52,7 +52,7 @@ Câu hỏi: {question}
 
 API: {candidate.name}
 Mô tả: {candidate.description}
-
+Lưu ý mỗi khi điền 1 param, hãy đọc kỹ phần description để chọn giá trị đúng nhất dựa vào câu hỏi. Nếu câu hỏi không đề cập đến một optional param nào đó, hãy dùng giá trị mặc định theo description (thường là [] cho List, null cho Integer/Boolean).
 REQUIRED params (bắt buộc phải có):
 {required_text}
 
