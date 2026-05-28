@@ -53,6 +53,13 @@ def _parse_body(body) -> dict:
     return {}
 
 
+def _clean_path(path: str) -> str:
+    """Strip query string khỏi path. CSV gốc có path dạng /KD-059?summaryDate=...&... → giữ phần base."""
+    if not isinstance(path, str):
+        return ""
+    return path.split("?", 1)[0]
+
+
 def parse_api_csv(csv_path: Path) -> list[APIEntry]:
     """Parse Tài_liệu_config_API_Doc_api_for_contest.csv → list[APIEntry] (131 entries).
 
@@ -65,7 +72,7 @@ def parse_api_csv(csv_path: Path) -> list[APIEntry]:
         ep = json.loads(row["Endpoint config"])
 
         request = ep.get("request", {})
-        path = request.get("path", "")
+        path = _clean_path(request.get("path", ""))
 
         example_call = ep.get("example_call", [])
         example_body: dict = {}

@@ -67,8 +67,16 @@ Yêu cầu:
 2. KHÔNG wrap thêm {{"path": ..., "body": ...}} bên ngoài.
 3. Với mỗi param, đọc kỹ description để chọn giá trị đúng.
 4. Nếu câu hỏi KHÔNG đề cập đến một optional param → dùng giá trị mặc định theo description (thường là [] cho List, null cho Integer/Boolean).
-5. Không thêm key ngoài danh sách trên.
-6. Không giải thích, chỉ trả về 1 JSON object hợp lệ.
+5. Với param dạng ID/List<Integer> (projectList, customerList, projectId, ...): TUYỆT ĐỐI KHÔNG tự bịa số.
+   Nếu câu hỏi không nêu rõ ID cụ thể → dùng [].
+6. Với param `isCompany` (Boolean):
+   - true nếu câu hỏi hỏi về toàn công ty (không có đơn vị/phòng ban cụ thể).
+   - false nếu câu hỏi có đề cập đơn vị/phòng ban cụ thể (organization non-empty).
+7. Với `isAllProject`/`isAllCustomer` (Boolean):
+   - true nếu projectList/customerList rỗng [].
+   - false nếu danh sách có ít nhất 1 phần tử.
+8. Không thêm key ngoài danh sách trên.
+9. Không giải thích, chỉ trả về 1 JSON object hợp lệ.
 
 Ví dụ output đúng: {{"key1": "value1", "key2": []}}
 
