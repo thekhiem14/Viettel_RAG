@@ -64,3 +64,5 @@ htmlcov/
 .claude
 
 local_requirements.txt
+clean_md.py
+data
