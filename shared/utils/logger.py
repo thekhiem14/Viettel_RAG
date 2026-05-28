@@ -32,9 +32,17 @@ def get_logger(name: str, log_dir: Path | None = None, level: int = logging.INFO
     logger.setLevel(level)
     formatter = _JsonFormatter()
 
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
+    # Only add stream handler (console logs) if not disabled in config
+    try:
+        import config
+        disable_console = getattr(config, "DISABLE_CONSOLE_LOG", False)
+    except (ImportError, AttributeError):
+        disable_console = False
+
+    if not disable_console:
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
 
     if log_dir is not None:
         log_dir.mkdir(parents=True, exist_ok=True)

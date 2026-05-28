@@ -25,9 +25,9 @@ from rag.src.llm.prompts_v2 import build_api_prompt_v2
 from rag.src.llm.qwen import generate
 from rag.src.retrieval.api_retriever import APIRetriever
 from shared.types import APIEntry, Question
-from shared.utils.logger import get_#logger
+from shared.utils.logger import get_logger
 
-#logger = get_#logger("api_pipeline_v2", config.LOGS_DIR)
+logger = get_logger("api_pipeline_v2", config.LOGS_DIR)
 
 # Số lần retry LLM khi parse body fail
 _LLM_MAX_ATTEMPTS = 2
