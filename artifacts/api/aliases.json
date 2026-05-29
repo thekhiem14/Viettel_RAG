@@ -1149,7 +1149,7 @@
       "value": false
     }
   ],
-  "IsAllCustomer": [
+  "isAllCustomer": [
     {
       "key": "tất cả khách hàng / toàn bộ khách hàng",
       "value": true

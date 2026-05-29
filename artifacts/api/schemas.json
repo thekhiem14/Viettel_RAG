@@ -1061,7 +1061,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1197,7 +1197,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1304,7 +1304,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1420,7 +1420,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1557,7 +1557,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1663,7 +1663,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1781,7 +1781,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -1888,7 +1888,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -2030,7 +2030,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -2137,7 +2137,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -2255,7 +2255,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -2392,7 +2392,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -2498,7 +2498,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
@@ -2616,7 +2616,7 @@
         "description": "Danh sách loại dự án (T&M, presales, odc/osdc, package). Nếu query không đề cập đến loại dự án -> trả về []"
       },
       {
-        "name": "IsAllCustomer",
+        "name": "isAllCustomer",
         "type": "Boolean",
         "description": "Tất cả khách hàng hay không"
       },
